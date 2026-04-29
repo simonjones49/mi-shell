@@ -88,7 +88,7 @@ Scope {
     Rectangle {
       id: launcherBox
       anchors.centerIn: parent
-      width: 580
+      width: 500
       height: 480
       radius: 16
       color: root.theme.bgBase
@@ -247,8 +247,8 @@ Scope {
 
               // App icon
               Item {
-                width: 28
-                height: 28
+                width: 48
+                height: 48
                 Layout.alignment: Qt.AlignVCenter
 
                 IconImage {
@@ -277,7 +277,7 @@ Scope {
                 Text {
                   text: delegateRoot.modelData.name ?? ""
                   color: root.selectedIndex === delegateRoot.index ? root.theme.textPrimary : root.theme.textSecondary
-                  font.pixelSize: 13
+                  font.pixelSize: 18
                   font.family: "Hack Nerd Font"
                   font.bold: root.selectedIndex === delegateRoot.index
                   elide: Text.ElideRight
