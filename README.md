@@ -7,7 +7,15 @@ This started off as project to use https://github.com/doannc2212/quickshell-conf
 
 It ended up becoming an new system which is growing as I get the time. 
 
+It has pinned apps with chosen icons, the icon lights up when in use and dims when closed. Running apps appear below. 
 
+![The main Bar](/home/simon/Pictures/Clipboard/Clipboard 2026-04-29 15-56-21.png)
+
+The pop out calendar links directly to khal.
+
+![The Calendar](/home/simon/Pictures/Clipboard/Clipboard 2026-04-29 15-56-43.png)
+
+![The application launcher](/home/simon/Pictures/Clipboard/Clipboard 2026-04-29 15-57-01.png)
 
 ## What currently works
 
@@ -36,4 +44,6 @@ optional, depending on which modules you use:
 - `/sys/class/power_supply/` — for battery info (standard on most laptops)
 - `swww` — for the wallpaper manager
 - blueman - bluetooth control
+- khal - Calendar app
+- Vdirsyncer - to sync the calendar data
 
