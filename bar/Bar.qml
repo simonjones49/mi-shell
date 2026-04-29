@@ -225,8 +225,8 @@ Scope {
           Rectangle { width: 38; height: 45; radius: 8; color: root.theme.bgSurface
             Column { anchors.centerIn: parent; spacing: 1
               Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 10; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: SystemInfo.cpuUsage; font.pixelSize: 10; color: parseFloat(text) > 80 ? "#fb4934" : "#b8bb26"; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: root.currentTemp; font.pixelSize: 10; color: parseInt(text) > 80 ? "#fb4934" : "#b8bb26"; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: SystemInfo.cpuUsage; font.pixelSize: 10; color: parseFloat(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: root.currentTemp; font.pixelSize: 10; color: parseInt(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
             }
           }
 

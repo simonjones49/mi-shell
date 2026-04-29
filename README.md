@@ -1,9 +1,11 @@
-# my quickshell config
+# Welcome to mi-shell
 This is my version of a quickshell bar and tools.
 
 It is vertical and for now there is no settings panel, everything is done via the config files. This may change over time but I am just setting this up for me. 
 
+This started off as project to use https://github.com/doannc2212/quickshell-config instead of the legacy Noctalia.
 
+It ended up becoming an new system which is growing as I get the time. 
 
 
 
@@ -24,6 +26,8 @@ these are needed regardless of which modules you use:
 
 - [Quickshell](https://quickshell.outfoxxed.me/) + Qt 6
 - niri
+- swayidle
+- awww
 
 optional, depending on which modules you use:
 
