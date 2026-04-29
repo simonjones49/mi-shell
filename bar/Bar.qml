@@ -17,7 +17,7 @@ Scope {
   property string currentTemp: "--"
 
   property var pinnedApps: [
-    { id: "floorp", icon: "browser", exec: "floorp" },
+    { id: "floorp", icon: "browser", exec: "setsid", "-f", "floorp" },
     { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
@@ -200,6 +200,7 @@ Scope {
             }
           }
 
+
           Rectangle { width: 20; height: 1; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter; visible: root.niriWindows.filter(w => !root.pinnedApps.some(p => p.id === w.app_id)).length > 0 }
 
           Repeater {
@@ -239,7 +240,34 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.muted = !Pipewire.defaultAudioSink.audio.muted; onWheel: (wheel) => { let s = Pipewire.defaultAudioSink?.audio; if (s) s.volume = Math.max(0, Math.min(1.5, s.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))); } }
             }
           }
-          Column { spacing: 4; anchors.horizontalCenter: parent.horizontalCenter; Repeater { model: SystemTray.items; IconImage { required property var modelData; source: modelData.icon; implicitSize: 20; MouseArea { anchors.fill: parent; onClicked: modelData.activate() } } } }
+          Column {
+            spacing: 4
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Repeater {
+              model: SystemTray.items
+              IconImage {
+                required property var modelData
+                source: modelData.icon
+                implicitSize: 20
+
+                MouseArea {
+                  anchors.fill: parent
+                  onClicked: {
+                    // Check if the item is nm-applet (it usually identifies as 'nm-applet' or 'network')
+                    if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
+                      let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                      p.command = ["kitty", "-e", "nmtui"];
+                      p.running = true;
+                    } else {
+                      // Standard activation for other items (Bluetooth, Discord, etc.)
+                      modelData.activate();
+                    }
+                  }
+                }
+              }
+            }
+          }
 
           // Clock
           Rectangle { width: 36; height: 44; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter

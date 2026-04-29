@@ -14,8 +14,8 @@ import "themeSwitcher" // Renamed
 import "wallpaper"
 import "media"
 import "osd"
-
 Scope {
+
   ThemeSwitcher { id: ts }
   Bar { theme: ts.theme }
   AppLauncher { theme: ts.theme }
