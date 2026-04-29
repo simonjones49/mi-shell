@@ -9,13 +9,13 @@ It ended up becoming an new system which is growing as I get the time.
 
 It has pinned apps with chosen icons, the icon lights up when in use and dims when closed. Running apps appear below. 
 
-![The main Bar](assets/Clipboard 2026-04-29 15-56-21.png)
+![The main Bar](assets/bar.png)
 
 The pop out calendar links directly to khal.
 
-![The Calendar](assets/Clipboard 2026-04-29 15-56-43.png)
+![The Calendar](assets/calendar.png)
 
-![The application launcher](assets/Clipboard 2026-04-29 15-57-01.png)
+![The application launcher](assets/launcher.png)
 
 ## What currently works
 
