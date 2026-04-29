@@ -17,10 +17,12 @@ Scope {
   property string currentTemp: "--"
 
   property var pinnedApps: [
-    { id: "floorp", icon: "browser", exec: "setsid", "-f", "floorp" },
+    { id: "floorp", icon: "browser", exec:
+      "floorp" },
     { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
+
 
   function resolveIcon(appId) {
     if (!appId) return "application-x-executable";
@@ -185,12 +187,12 @@ Scope {
           id: middleArea
           y: 350 // Direct Y positioning
           width: parent.width
-          spacing: 12
+          spacing: 8
 
           Repeater {
             model: root.pinnedApps
             Rectangle {
-              required property var modelData; width: 34; height: 34; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
+              required property var modelData; width: 42; height: 42; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
               property var runningWin: root.niriWindows.find(w => w.app_id === modelData.id)
               color: runningWin?.is_focused ? root.theme.bgSurface : "transparent"
               border.width: runningWin?.is_focused ? 1 : 0; border.color: root.theme.accentPrimary
