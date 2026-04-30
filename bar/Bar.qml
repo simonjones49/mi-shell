@@ -71,13 +71,13 @@ Scope {
 
   Process {
     id: sysDetailProc
-    command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2 && uname -r && uptime -p | sed 's/up // ' && free -h | awk '/^Mem:/ {print $3 \" / \" $2}' && df -h / | awk 'NR==2 {print $3 \" / \" $2}'"]
+    command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2 && uname -r && uptime -p | sed 's/up // ' && free -h | awk '/^Mem:/ {print $3 \" / \" $2}' && df -h / | awk 'NR==2 {print $3 \" / \" $2}' && df -h /home | awk 'NR==2 {print $3 \" / \" $2}'"]
     running: false
     stdout: StdioCollector {
       onStreamFinished: {
         let lines = text.trim().split('\n');
         if (lines.length >= 5) {
-          root.sysDetails = "OS:   " + lines[0] + "\n" + "Ker:  " + lines[1] + "\n" + "Up:   " + lines[2] + "\n" + "RAM:  " + lines[3] + "\n" + "Disk: " + lines[4];
+          root.sysDetails = "OS:   " + lines[0] + "\n" + "Ker:  " + lines[1] + "\n" + "Up:   " + lines[2] + "\n" + "RAM:  " + lines[3] + "\n" + "Disk: " + lines[4]  + "\n" + "Home: " + lines[5];
         }
       }
     }
@@ -86,7 +86,7 @@ Scope {
   // Fetch Khal Agenda
   Process {
     id: agendaProc
-    command: ["khal", "list", "today", "7days"]
+        command: ["sh", "-c", "khal list --notstarted now 7d --format '{start-time} {title}' --day-format '{name}, {date}'"]
     running: false
     stdout: StdioCollector {
       onStreamFinished: {
@@ -110,24 +110,18 @@ Scope {
       PopupWindow {
         id: cpuPopup
         anchor.window: mainBar
-        anchor.rect.x: -210
-        anchor.rect.y: mainBar.height - 230
-        implicitWidth: 200; implicitHeight: 140; visible: false
+        anchor.rect.x: -300
+        anchor.rect.y: mainBar.height - 650
+        implicitWidth: 280; implicitHeight: 180; visible: false
         Connections { target: cpuPopup; function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } } }
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 0
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 8
-            Text { text: "SYSTEM OVERVIEW"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 10 }
+            Text { text: "SYSTEM OVERVIEW"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
             Column {
               spacing: 3
-              Text { text: root.sysDetails; color: root.theme.textPrimary; font.pixelSize: 10; font.family: "Monospace" }
-              Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
-              Row {
-                spacing: 10
-                Text { text: "CPU " + SystemInfo.cpuUsage; color: root.theme.textPrimary; font.pixelSize: 10; font.family: "Monospace" }
-                Text { text: "Temp " + root.currentTemp; color: root.theme.textPrimary; font.pixelSize: 10; font.family: "Monospace" }
-              }
+              Text { text: root.sysDetails; color: root.theme.textPrimary; font.pixelSize: 14; font.family: "Monospace" }
             }
           }
         }
@@ -137,9 +131,9 @@ Scope {
       PopupWindow {
         id: calendarPopup
         anchor.window: mainBar
-        anchor.rect.x: -230
+        anchor.rect.x: -300
         anchor.rect.y: mainBar.height - 460
-        implicitWidth: 220; implicitHeight: 450; visible: false
+        implicitWidth: 280; implicitHeight: 450; visible: false
 
         Connections {
           target: calendarPopup
@@ -163,21 +157,21 @@ Scope {
                 Rectangle {
                   width: 22; height: 22; radius: 4;
                   color: (index + 1 == new Date().getDate()) ? root.theme.accentPrimary : "transparent";
-                  Text { text: index + 1; anchors.centerIn: parent; color: (index + 1 == new Date().getDate()) ? root.theme.bgBase : root.theme.textPrimary; font.pixelSize: 12 }
+                  Text { text: index + 1; anchors.centerIn: parent; color: (index + 1 == new Date().getDate()) ? root.theme.bgBase : root.theme.textPrimary; font.pixelSize: 14 }
                 }
               }
             }
 
             Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
 
-            Text { text: "AGENDA"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 10 }
+            Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
 
             // Scrollable Agenda
             ScrollView {
               width: parent.width; height: 140; clip: true
               Text {
-                width: 190; text: root.agendaDetails; color: root.theme.textPrimary;
-                font.pixelSize: 10; font.family: "Monospace"; wrapMode: Text.Wrap
+                width: 280; text: root.agendaDetails; color: root.theme.textPrimary;
+                font.pixelSize: 14; font.family: "Monospace"; wrapMode: Text.Wrap
               }
             }
 
