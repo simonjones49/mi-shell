@@ -303,7 +303,7 @@ Scope {
                       // Check for network logic or standard activate
                       if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
                         let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                        p.command = ["kitty", "-e", "nmtui"];
+                        p.command = ["kitty", "--class", "nmtui-terminal", "-e", "nmtui"];
                         p.running = true;
                       } else {
                         // Call without arguments

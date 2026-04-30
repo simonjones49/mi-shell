@@ -64,7 +64,7 @@ QtObject {
         running: !notifData.closed
                  && !notifData.hovered
                  && notifData.urgency !== NotificationUrgency.Critical
-        interval: notifData.expireTimeout > 0 ? notifData.expireTimeout * 1000 : 5000
+        interval: notifData.expireTimeout > 0 ? notifData.expireTimeout * 1000 : 8000
         onTriggered: notifData.dismiss()
     }
 
@@ -77,7 +77,7 @@ QtObject {
         appName   = notification.appName   || "";
         image     = notification.image     || "";
         urgency   = notification.urgency;
-        expireTimeout = notification.expireTimeout > 0 ? notification.expireTimeout : 5;
+        expireTimeout = notification.expireTimeout > 0 ? notification.expireTimeout : 8;
         actions   = notification.actions.map(function(a) {
             return { identifier: a.identifier, text: a.text };
         });
