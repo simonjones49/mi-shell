@@ -71,13 +71,13 @@ Scope {
 
   Process {
     id: sysDetailProc
-    command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2 && uname -r && uptime -p | sed 's/up // ' && free -h | awk '/^Mem:/ {print $3 \" / \" $2}' && df -h / | awk 'NR==2 {print $3 \" / \" $2}' && df -h /home | awk 'NR==2 {print $3 \" / \" $2}'"]
+    command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2 && uname -r && uptime -p | sed 's/up //; s/ days*/d/; s/ hours*/h/; s/ minutes*/m/; s/,//g' && free -h | awk '/^Mem:/ {print $3 \" / \" $2}' && df -h / | awk 'NR==2 {print $3 \" / \" $2}' && df -h /home | awk 'NR==2 {print $3 \" / \" $2}'"]
     running: false
     stdout: StdioCollector {
       onStreamFinished: {
         let lines = text.trim().split('\n');
         if (lines.length >= 5) {
-          root.sysDetails = "OS:   " + lines[0] + "\n" + "Ker:  " + lines[1] + "\n" + "Up:   " + lines[2] + "\n" + "RAM:  " + lines[3] + "\n" + "Disk: " + lines[4]  + "\n" + "Home: " + lines[5];
+          root.sysDetails = "Distro: " + lines[0] + "\n" + "Kernel: " + lines[1] + "\n" + "Uptime: " + lines[2] + "\n" + "RAM   : " + lines[3] + "\n" + "Disk /: " + lines[4]  + "\n" + "Home  : " + lines[5];
         }
       }
     }
@@ -111,14 +111,14 @@ Scope {
         id: cpuPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 650
+        anchor.rect.y: mainBar.height - 630
         implicitWidth: 280; implicitHeight: 180; visible: false
         Connections { target: cpuPopup; function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } } }
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 0
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 8
-            Text { text: "SYSTEM OVERVIEW"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
+            Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
             Column {
               spacing: 3
               Text { text: root.sysDetails; color: root.theme.textPrimary; font.pixelSize: 14; font.family: "Monospace" }
@@ -132,8 +132,8 @@ Scope {
         id: calendarPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 460
-        implicitWidth: 280; implicitHeight: 450; visible: false
+        anchor.rect.y: mainBar.height - 440
+        implicitWidth: 280; implicitHeight: 430; visible: false
 
         Connections {
           target: calendarPopup
@@ -266,9 +266,9 @@ Scope {
 
           Rectangle { width: 38; height: 45; radius: 8; color: root.theme.bgSurface
             Column { anchors.centerIn: parent; spacing: 1
-              Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 10; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: SystemInfo.cpuUsage; font.pixelSize: 10; color: parseFloat(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: root.currentTemp; font.pixelSize: 10; color: parseInt(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 11; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: SystemInfo.cpuUsage; font.pixelSize: 11; color: parseFloat(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: root.currentTemp; font.pixelSize: 11; color: parseInt(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
             }
             MouseArea { anchors.fill: parent; onClicked: cpuPopup.visible = !cpuPopup.visible }
           }
