@@ -11,9 +11,9 @@ It has pinned apps with chosen icons, the icon lights up when in use and dims wh
 
 ![The main Bar](assets/bar.png)
 
-The pop out calendar links directly to khal.
+The pop out calendar links directly to khal and the system widget has information.
 
-![The Calendar](assets/calendar.png)
+![Popout Widgets from the main bar](assets/widgets.png)
 
 ![The application launcher](assets/launcher.png)
 
