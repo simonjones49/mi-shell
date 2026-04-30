@@ -212,11 +212,11 @@ Scope {
                                     font.pixelSize: 12
                                     font.family: "Hack Nerd Font"
                                     wrapMode: Text.Wrap
-                                    maximumLineCount: 3
+                                    maximumLineCount:8
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                     visible: text !== ""
-                                    textFormat: Text.PlainText
+                                    textFormat: Text.RichText
                                 }
 
                                 Rectangle {
@@ -291,23 +291,56 @@ Scope {
 
                                 Rectangle {
                                     id: progressBar
-                                    height: parent.height
-                                    width: parent.width
-                                    radius: 1
-                                    color: notifCard.modelData.urgency === NotificationUrgency.Critical
-                                           ? root.theme.urgencyCritical : root.theme.urgencyNormal
-                                    opacity: 0.6
+                                    height: 2
+                                    // Ensure width is handled by the Binding below
 
-                                    SequentialAnimation {
-                                        running: notifCard.modelData.urgency !== NotificationUrgency.Critical
-                                        PauseAnimation { duration: 50 }
-                                        NumberAnimation {
-                                            target: progressBar
-                                            property: "width"
-                                            to: 0
-                                            duration: notifCard.modelData.expireTimeout > 0
-                                                      ? notifCard.modelData.expireTimeout * 1000
-                                                      : 5000
+                                    // Restore the dynamic color logic
+                                    color: {
+                                        if (notifCard.modelData.urgency === NotificationUrgency.Low) {
+                                            return root.theme.urgencyLow;
+                                        } else if (notifCard.modelData.urgency === NotificationUrgency.Normal) {
+                                            return root.theme.urgencyNormal;
+                                        }
+                                        return root.theme.accent; // Fallback color
+                                    }
+
+                                    visible: notifCard.modelData.urgency !== NotificationUrgency.Critical
+                                    property real progress: 1.0
+
+                                    Binding {
+                                        target: progressBar
+                                        property: "width"
+                                        value: progressBar.parent.width * progressBar.progress
+                                    }
+
+                                    Timer {
+                                        id: masterTimer
+                                        interval: 50    // Update every 50ms for smooth motion
+                                        running: progressBar.visible
+                                        repeat: true
+
+                                        property int elapsed: 0
+                                        property int totalDuration: 5000 // Hardcoded 5 seconds
+
+                                        onTriggered: {
+                                            elapsed += interval;
+                                            progressBar.progress = Math.max(0, 1.0 - (elapsed / totalDuration));
+
+                                            if (elapsed >= totalDuration) {
+                                                stop();
+                                                console.log("5 Seconds reached, dismissing.");
+                                                notifCard.modelData.dismiss();
+                                            }
+                                        }
+                                    }
+
+                                    // Reset logic for the System Boot updates
+                                    Connections {
+                                        target: notifCard.modelData
+                                        function onBodyChanged() {
+                                            masterTimer.elapsed = 0;
+                                            progressBar.progress = 1.0;
+                                            masterTimer.restart();
                                         }
                                     }
                                 }
