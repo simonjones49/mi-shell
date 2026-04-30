@@ -112,7 +112,7 @@ Scope {
             }
 
             onTextChanged: resultsList.currentIndex = 0
-
+            Keys.onEscapePressed: launcherPanel.visible = false
             Keys.onPressed: event => {
               if (event.key === Qt.Key_Down || event.key === Qt.Key_Tab) {
                 event.accepted = true;
