@@ -290,11 +290,26 @@ Scope {
                 required property var modelData; source: modelData.icon; implicitSize: 20
                 MouseArea {
                   anchors.fill: parent
-                  onClicked: {
-                    if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
-                      let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                      p.command = ["kitty", "-e", "nmtui"]; p.running = true;
-                    } else { modelData.activate(); }
+                  // If this line is missing, 'mouse.button' will never be 2 (RightButton)
+                  acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                  onClicked: (mouse) => {
+                    // console.log("Tray Click - ID:", modelData.id, "Button:", mouse.button);
+
+                    if (mouse.button === Qt.RightButton) {
+                      // Call without arguments
+                      modelData.secondaryActivate();
+                    } else {
+                      // Check for network logic or standard activate
+                      if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
+                        let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                        p.command = ["kitty", "-e", "nmtui"];
+                        p.running = true;
+                      } else {
+                        // Call without arguments
+                        modelData.activate();
+                      }
+                    }
                   }
                 }
               }
