@@ -20,6 +20,55 @@ Scope {
   property string sysDetails: "Loading stats..."
   property string agendaDetails: "No upcoming events."
   property string calOutput: ""
+  property bool numLockActive: false
+
+
+  Timer {
+    interval: 500
+    running: true
+    repeat: true
+    onTriggered: {
+      numLockCheck.running = false;
+      numLockCheck.running = true;
+
+      capsLockCheck.running = false; // Add this
+      capsLockCheck.running = true;  // Add this
+    }
+  }
+  Process {
+    id: numLockCheck
+    command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::numlock/brightness && echo '1' || echo '0'"]
+    running: false
+    stdout: StdioCollector {
+      // onStreamFinished waits for the process to exit, then gives us the full text
+      onStreamFinished: {
+        let status = text.trim();
+        //console.log("NumLock Polled Status:", status); // This SHOULD show in terminal now
+        root.numLockActive = (status === "1");
+      }
+    }
+    // Adding this will help us see if Quickshell is hitting any snags
+    stderr: StdioCollector {
+      onRead: data => console.log("Process Error:", data.toString())
+    }
+  }
+
+  // In your properties section
+  property bool capsLockActive: false
+
+  // The new process
+  Process {
+    id: capsLockCheck
+    command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::capslock/brightness && echo '1' || echo '0'"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        let status = text.trim();
+        root.capsLockActive = (status === "1");
+      }
+    }
+  }
+
 
   property var pinnedApps: [
     { id: "floorp", icon: "browser", exec: "floorp" },
@@ -154,16 +203,18 @@ Scope {
         id: cpuPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 685
+        anchor.rect.y: mainBar.height - 690
         implicitWidth: 280
         implicitHeight: 180
         visible: false
+               color: "transparent"
         Connections {
           target: cpuPopup
           function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } }
         }
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface
+          radius: 10
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 8
             Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
@@ -178,8 +229,10 @@ Scope {
         anchor.rect.x: -300
         anchor.rect.y: mainBar.height - 500
         implicitWidth: 280
-        implicitHeight: 500
+        implicitHeight: 510
         visible: false
+        color: "transparent"
+
         Connections {
           target: calendarPopup
           function onVisibleChanged() {
@@ -195,6 +248,7 @@ Scope {
         }
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface
+          radius: 10
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 12
             Text {
@@ -234,28 +288,72 @@ Scope {
         }
       }
 
-      PopupWindow {
+      PanelWindow {
         id: powerPopup
-        anchor.window: mainBar
-        anchor.rect.x: -130
-        anchor.rect.y: mainBar.height - 120
-        implicitWidth: 120; implicitHeight: 110; visible: false
+        visible: false
+        focusable: true
+        color: "transparent"
+
+        // Use the same focus logic as your launcher
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+
+        // Fill the screen so we can catch clicks outside the center box
+        anchors { top: true; bottom: true; left: true; right: true }
+
+        // Click anywhere outside the menu to close it
+        MouseArea {
+          anchors.fill: parent
+          onClicked: powerPopup.visible = false
+          // Optional: darken the background slightly like the launcher
+          onVisibleChanged: {
+            if (visible) {
+              powerBox.forceActiveFocus();
+            }
+          }
+          Rectangle { anchors.fill: parent; color: root.theme.bgOverlay }
+        }
+
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface
-          Column {
-            anchors.fill: parent; anchors.margins: 5; spacing: 2
+          id: powerBox
+          focus: true // Add this so it's allowed to take focus
+          anchors.centerIn: parent
+          width: 420
+          height: 120
+          radius: 12
+          color: root.theme.bgBase
+          border.width: 2
+          border.color: root.theme.bgSurface
+
+          Row {
+            anchors.centerIn: parent
+            spacing: 25
+
             Repeater {
               model: [
-                { t: "Logout", c: root.theme.textPrimary, cmd: ["niri", "msg", "action", "quit"] },
-                { t: "Reboot", c: root.theme.textPrimary, cmd: ["systemctl", "reboot"] },
-                { t: "Shut Down", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
+                { t: "Logout", i: "󰍃", c: root.theme.textPrimary, cmd: ["niri", "msg", "action", "quit"] },
+                { t: "Reboot", i: "󰑓", c: root.theme.textPrimary, cmd: ["systemctl", "reboot"] },
+                { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
               ]
+
               Rectangle {
-                width: 110; height: 30; color: "transparent"
-                Text { text: modelData.t; color: modelData.c; anchors.centerIn: parent }
+                width: 110; height: 90
+                radius: 10
+                color: pwrMouse.containsMouse ? root.theme.bgSurface : "transparent"
+
+                Column {
+                  anchors.centerIn: parent
+                  spacing: 8
+                  Text { text: modelData.i; color: modelData.c; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
+                  Text { text: modelData.t; color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+                }
+
                 MouseArea {
+                  id: pwrMouse
                   anchors.fill: parent
+                  hoverEnabled: true
                   onClicked: {
+                    powerPopup.visible = false // Close first
                     let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
                     p.command = modelData.cmd;
                     p.running = true;
@@ -264,7 +362,11 @@ Scope {
               }
             }
           }
+
+          // Allow ESC key to close it just like the launcher
+          Keys.onEscapePressed: powerPopup.visible = false
         }
+
       }
 
       // --- MAIN BAR CONTENT ---
@@ -369,6 +471,41 @@ Scope {
           // Vol/Bright
           Column {
             spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle {
+              width: 34; height: 34; radius: 6
+
+              // Use root.numLockActive to ensure it's looking at the Scope property
+              color: root.numLockActive ? root.theme.bgSelected : "transparent"
+              border.width: 1
+              border.color: root.numLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+
+              Text {
+                anchors.centerIn: parent
+                text: "1"
+                font.pixelSize: 14
+                font.bold: true
+                // Make sure this color contrast is high enough to see
+                color: root.numLockActive ? "#FFFFFF" : root.theme.textMuted
+              }
+
+              Behavior on color { ColorAnimation { duration: 200 } }
+            }
+            Rectangle {
+              width: 34; height: 34; radius: 6
+              color: root.capsLockActive ? root.theme.bgSelected : "transparent"
+              border.width: 1
+              border.color: root.capsLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+
+              Text {
+                anchors.centerIn: parent
+                text: "A" // "A" for Caps, "1" for Num
+                font.pixelSize: 14
+                font.bold: true
+                color: root.capsLockActive ? "#FFFFFF" : root.theme.textMuted
+              }
+
+              Behavior on color { ColorAnimation { duration: 200 } }
+            }
             Rectangle {
               width: 32; height: 32; radius: 16; color: root.theme.bgSurface
               Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
