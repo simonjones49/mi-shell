@@ -11,6 +11,8 @@ import Quickshell.Bluetooth
 
 Scope {
   id: root
+
+  // --- PROPERTIES ---
   property var theme
   property var niriWorkspaces: []
   property var niriWindows: []
@@ -24,9 +26,12 @@ Scope {
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
 
+  // --- HELPER FUNCTIONS ---
   function resolveIcon(appId) {
     if (!appId) return "application-x-executable";
+
     let id = appId.toLowerCase();
+
     const iconMap = {
       "kitty": "terminal",
       "floorp": "browser",
@@ -37,16 +42,23 @@ Scope {
       "endcord": "discord",
       "watch-videos": "video-x-generic"
     };
+
     if (iconMap[id]) return iconMap[id];
-    if (id.includes(".")) { let parts = id.split("."); return parts[parts.length - 1]; }
+
+    if (id.includes(".")) {
+      let parts = id.split(".");
+      return parts[parts.length - 1];
+    }
+
     return id;
   }
 
-  // --- DATA FETCHING ---
+  // --- DATA FETCHING: NIRI WORKSPACES/WINDOWS ---
   Process {
     id: niriProc
     command: ["sh", "-c", "niri msg -j workspaces && echo '---SEP---' && niri msg -j windows"]
     running: true
+
     stdout: StdioCollector {
       onStreamFinished: {
         try {
@@ -55,6 +67,7 @@ Scope {
             let ws = JSON.parse(parts[0].trim());
             ws.sort((a, b) => a.id - b.id);
             root.niriWorkspaces = ws;
+
             let wins = JSON.parse(parts[1].trim());
             root.niriWindows = wins.filter(win => win.title !== "dropdown").sort((a, b) => a.pid - b.pid);
           }
@@ -62,12 +75,20 @@ Scope {
       }
     }
   }
-  Timer { interval: 1000; running: true; repeat: true; onTriggered: if (!niriProc.running) niriProc.running = true }
 
+  Timer {
+    interval: 1000
+    running: true
+    repeat: true
+    onTriggered: if (!niriProc.running) niriProc.running = true
+  }
+
+  // --- DATA FETCHING: TEMPERATURE ---
   Process {
     id: tempProc
     command: ["cat", "/sys/class/thermal/thermal_zone0/temp"]
     running: true
+
     stdout: StdioCollector {
       onStreamFinished: {
         let cleanText = text.trim().split('\n')[0];
@@ -76,26 +97,41 @@ Scope {
       }
     }
   }
-  Timer { interval: 2000; running: true; repeat: true; onTriggered: if (!tempProc.running) tempProc.running = true }
 
+  Timer {
+    interval: 2000
+    running: true
+    repeat: true
+    onTriggered: if (!tempProc.running) tempProc.running = true
+  }
+
+  // --- DATA FETCHING: SYSTEM DETAILS ---
   Process {
     id: sysDetailProc
     command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'\"' -f2 && uname -r && uptime -p | sed 's/up //; s/ days*/d/; s/ hours*/h/; s/ minutes*/m/; s/,//g' && free -h | awk '/^Mem:/ {print $3 \" / \" $2}' && df -h / | awk 'NR==2 {print $3 \" / \" $2}' && df -h /home | awk 'NR==2 {print $3 \" / \" $2}'"]
     running: false
+
     stdout: StdioCollector {
       onStreamFinished: {
         let lines = text.trim().split('\n');
         if (lines.length >= 5) {
-          root.sysDetails = "Distro: " + lines[0] + "\n" + "Kernel: " + lines[1] + "\n" + "Uptime: " + lines[2] + "\n" + "RAM    : " + lines[3] + "\n" + "Disk /: " + lines[4]  + "\n" + "Home  : " + lines[5];
+          root.sysDetails = "Distro: " + lines[0] + "\n" +
+          "Kernel: " + lines[1] + "\n" +
+          "Uptime: " + lines[2] + "\n" +
+          "RAM    : " + lines[3] + "\n" +
+          "Disk /: " + lines[4]  + "\n" +
+          "Home  : " + lines[5];
         }
       }
     }
   }
 
+  // --- DATA FETCHING: CALENDAR AGENDA ---
   Process {
     id: agendaProc
     command: ["sh", "-c", "khal list --notstarted now 7d --format '{start-time} {title}' --day-format '{name}, {date}'"]
     running: false
+
     stdout: StdioCollector {
       onStreamFinished: {
         let cleanText = text.trim();
@@ -104,8 +140,10 @@ Scope {
     }
   }
 
+  // --- WINDOW RENDER ---
   Variants {
     model: Quickshell.screens
+
     PanelWindow {
       id: mainBar
       required property var modelData
@@ -115,63 +153,189 @@ Scope {
       color: root.theme.bgBase
 
       // --- POPUPS ---
+
+      // CPU/System Popup
       PopupWindow {
         id: cpuPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 630
-        implicitWidth: 280; implicitHeight: 180; visible: false
-        Connections { target: cpuPopup; function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } } }
+        anchor.rect.y: mainBar.height - 685
+        implicitWidth: 280
+        implicitHeight: 180
+        visible: false
+
+        Connections {
+          target: cpuPopup
+          function onVisibleChanged() {
+            if (cpuPopup.visible) {
+              sysDetailProc.running = false;
+              sysDetailProc.running = true;
+            }
+          }
+        }
+
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 0
+          anchors.fill: parent
+          color: root.theme.bgBase
+          border.width: 1
+          border.color: root.theme.bgSurface
+          radius: 0
+
           Column {
-            anchors.fill: parent; anchors.margins: 12; spacing: 8
-            Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
+            anchors.fill: parent
+            anchors.margins: 12
+            spacing: 8
+
+            Text {
+              text: "System Info"
+              color: root.theme.accentPrimary
+              font.bold: true
+              font.pixelSize: 14
+            }
+
             Column {
               spacing: 3
-              Text { text: root.sysDetails; color: root.theme.textPrimary; font.pixelSize: 14; font.family: "Monospace" }
+              Text {
+                text: root.sysDetails
+                color: root.theme.textPrimary
+                font.pixelSize: 14
+                font.family: "Monospace"
+              }
             }
           }
         }
       }
 
+      // Calendar Popup
       PopupWindow {
         id: calendarPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 440
-        implicitWidth: 280; implicitHeight: 430; visible: false
-        Connections { target: calendarPopup; function onVisibleChanged() { if (calendarPopup.visible) { agendaProc.running = false; agendaProc.running = true; } } }
+        anchor.rect.y: mainBar.height - 500
+        implicitWidth: 280
+        implicitHeight: 500
+        visible: false
+
+        property date today: new Date()
+        property int startOffset: (new Date(today.getFullYear(), today.getMonth(), 1).getDay() + 6) % 7
+
+        Connections {
+          target: calendarPopup
+          function onVisibleChanged() {
+            if (calendarPopup.visible) {
+              calendarPopup.today = new Date();
+              agendaProc.running = false;
+              agendaProc.running = true;
+            }
+          }
+        }
+
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 0
+          anchors.fill: parent
+          color: root.theme.bgBase
+          border.width: 1
+          border.color: root.theme.bgSurface
+          radius: 0
+
           Column {
-            anchors.fill: parent; anchors.margins: 12; spacing: 12
-            Text { text: Qt.formatDateTime(new Date(), "MMMM yyyy"); color: root.theme.accentPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+            anchors.fill: parent
+            anchors.margins: 12
+            spacing: 12
+
+            Text {
+              text: Qt.formatDateTime(calendarPopup.today, "MMMM yyyy");
+              color: root.theme.accentPrimary
+              font.bold: true
+              anchors.horizontalCenter: parent.horizontalCenter
+            }
+
             Grid {
-              columns: 7; spacing: 5; anchors.horizontalCenter: parent.horizontalCenter
+              columns: 7
+              spacing: 5
+              anchors.horizontalCenter: parent.horizontalCenter
+
               Repeater {
-                model: 31
+                model: ["M", "T", "W", "T", "F", "S", "S"]
+                Text {
+                  width: 26
+                  text: modelData
+                  color: root.theme.textPrimary
+                  opacity: 0.5
+                  font.pixelSize: 14
+                  horizontalAlignment: Text.AlignHCenter
+                }
+              }
+
+
+              Repeater {
+                model: calendarPopup.startOffset
+                Item { width: 26; height: 28 }
+              }
+
+              Repeater {
+                model: new Date(calendarPopup.today.getFullYear(), calendarPopup.today.getMonth() + 1, 0).getDate()
                 Rectangle {
-                  width: 22; height: 22; radius: 4
-                  color: (index + 1 == new Date().getDate()) ? root.theme.accentPrimary : "transparent"
-                  Text { text: index + 1; anchors.centerIn: parent; color: (index + 1 == new Date().getDate()) ? root.theme.bgBase : root.theme.textPrimary; font.pixelSize: 14 }
+                  width: 26
+                  height: 28
+                  radius: 4
+                  color: (index + 1 == calendarPopup.today.getDate()) ? root.theme.accentPrimary : "transparent"
+
+                  Text {
+                    text: index + 1
+                    anchors.centerIn: parent
+                    color: (index + 1 == calendarPopup.today.getDate()) ? root.theme.bgBase : root.theme.textPrimary;
+                    font.pixelSize: 14
+                  }
                 }
               }
             }
-            Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
-            Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
-            ScrollView {
-              width: parent.width; height: 140; clip: true
-              Text { width: 280; text: root.agendaDetails; color: root.theme.textPrimary; font.pixelSize: 14; font.family: "Monospace"; wrapMode: Text.Wrap }
-            }
+
             Rectangle {
-              width: parent.width; height: 32; color: root.theme.bgSurface; radius: 6
-              Text { text: "Open iKhal"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 11; anchors.centerIn: parent }
+              width: parent.width
+              height: 1
+              color: root.theme.bgSurface
+            }
+
+            Text {
+              text: "Upcoming events"
+              color: root.theme.accentPrimary
+              font.bold: true
+              font.pixelSize: 14
+            }
+
+            ScrollView {
+              width: parent.width
+              height: 160
+              clip: true
+              Text {
+                width: 250
+                text: root.agendaDetails
+                color: root.theme.textPrimary
+                font.pixelSize: 13
+                font.family: "Monospace"
+                wrapMode: Text.Wrap
+              }
+            }
+
+            Rectangle {
+              width: parent.width
+              height: 32
+              color: root.theme.bgSurface
+              radius: 6
+
+              Text {
+                text: "Open iKhal"
+                color: root.theme.accentPrimary
+                font.bold: true
+                font.pixelSize: 11
+                anchors.centerIn: parent
+              }
+
               MouseArea {
                 anchors.fill: parent
                 onClicked: {
                   let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = ["kitty", "--class" , "khal" , "-e", "ikhal"];
+                  p.command = ["kitty", "-e", "ikhal"];
                   p.running = true;
                   calendarPopup.visible = false;
                 }
@@ -181,113 +345,239 @@ Scope {
         }
       }
 
+      // Power Popup
       PopupWindow {
         id: powerPopup
         anchor.window: mainBar
         anchor.rect.x: -130
         anchor.rect.y: mainBar.height - 120
-        implicitWidth: 120; implicitHeight: 110; visible: false
+        implicitWidth: 120
+        implicitHeight: 110
+        visible: false
+
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 0
+          anchors.fill: parent
+          color: root.theme.bgBase
+          border.width: 1
+          border.color: root.theme.bgSurface
+          radius: 0
+
           Column {
-            anchors.fill: parent; anchors.margins: 5; spacing: 2
+            anchors.fill: parent
+            anchors.margins: 5
+            spacing: 2
+
             Rectangle {
-              width: parent.width; height: 30; color: "transparent"; radius: 4
+              width: parent.width
+              height: 30
+              color: "transparent"
+              radius: 4
               Text { text: "Logout"; color: root.theme.textPrimary; anchors.centerIn: parent }
-              MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = ["niri", "msg", "action", "quit"]; p.running = true; powerPopup.visible = false; } }
+              MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  p.command = ["niri", "msg", "action", "quit"];
+                  p.running = true;
+                  powerPopup.visible = false;
+                }
+              }
             }
+
             Rectangle {
-              width: parent.width; height: 30; color: "transparent"; radius: 4
+              width: parent.width
+              height: 30
+              color: "transparent"
+              radius: 4
               Text { text: "Reboot"; color: root.theme.textPrimary; anchors.centerIn: parent }
-              MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = ["systemctl", "reboot"]; p.running = true; powerPopup.visible = false; } }
+              MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  p.command = ["systemctl", "reboot"];
+                  p.running = true;
+                  powerPopup.visible = false;
+                }
+              }
             }
+
             Rectangle {
-              width: parent.width; height: 30; color: "transparent"; radius: 4
+              width: parent.width
+              height: 30
+              color: "transparent"
+              radius: 4
               Text { text: "Shut Down"; color: "#fb4934"; anchors.centerIn: parent }
-              MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = ["systemctl", "poweroff"]; p.running = true; powerPopup.visible = false; } }
+              MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  p.command = ["systemctl", "poweroff"];
+                  p.running = true;
+                  powerPopup.visible = false;
+                }
+              }
             }
           }
         }
       }
 
-      // --- MAIN CONTENT ---
+      // --- MAIN BAR CONTENT ---
       Item {
         anchors.fill: parent
         anchors.margins: 6
 
+        // Top: Launcher Toggle
         Item {
-          id: topArea; width: parent.width; height: 40; anchors.top: parent.top
+          id: topArea
+          width: parent.width
+          height: 40
+          anchors.top: parent.top
+
           Rectangle {
-            width: 34; height: 34; radius: 8; color: root.theme.bgSurface; anchors.centerIn: parent
-            Text { text: "󰀻"; anchors.centerIn: parent; color: root.theme.accentPrimary; font.pixelSize: 36 }
-            MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "launcher", "toggle"]; p.running = true; } }
+            width: 34
+            height: 34
+            radius: 8
+            color: root.theme.bgSurface
+            anchors.centerIn: parent
+
+            Text {
+              text: "󰀻"
+              anchors.centerIn: parent
+              color: root.theme.accentPrimary
+              font.pixelSize: 36
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "launcher", "toggle"];
+                p.running = true;
+              }
+            }
           }
         }
 
+        // Middle: Taskbar / Apps
         Column {
-          id: middleArea; y: 350; width: parent.width; spacing: 8
+          id: middleArea
+          y: 350
+          width: parent.width
+          spacing: 8
+
           Repeater {
             model: root.pinnedApps
             Rectangle {
-              required property var modelData; width: 42; height: 42; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
+              required property var modelData
+              width: 42
+              height: 42
+              radius: 8
+              anchors.horizontalCenter: parent.horizontalCenter
               property var runningWin: root.niriWindows.find(w => w.app_id === modelData.id)
               color: runningWin?.is_focused ? root.theme.bgSurface : "transparent"
-              border.width: runningWin?.is_focused ? 1 : 0; border.color: root.theme.accentPrimary
+              border.width: runningWin?.is_focused ? 1 : 0
+              border.color: root.theme.accentPrimary
               opacity: runningWin ? 1.0 : 0.4
-              IconImage { anchors.fill: parent; anchors.margins: 4; source: "image://icon/" + modelData.icon }
-              MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); if (runningWin) p.command = ["niri", "msg", "action", "focus-window", "--id", runningWin.id.toString()]; else p.command = [modelData.exec]; p.running = true; } }
+
+              IconImage {
+                anchors.fill: parent
+                anchors.margins: 4
+                source: "image://icon/" + modelData.icon
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  if (runningWin)
+                    p.command = ["niri", "msg", "action", "focus-window", "--id", runningWin.id.toString()];
+                  else
+                    p.command = [modelData.exec];
+                  p.running = true;
+                }
+              }
             }
           }
-          Rectangle { width: 20; height: 1; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter; visible: root.niriWindows.filter(w => !root.pinnedApps.some(p => p.id === w.app_id)).length > 0 }
+
+          Rectangle {
+            width: 20
+            height: 1
+            color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: root.niriWindows.filter(w => !root.pinnedApps.some(p => p.id === w.app_id)).length > 0
+          }
+
           Repeater {
             model: root.niriWindows
             delegate: Rectangle {
-              required property var modelData; visible: !root.pinnedApps.some(p => p.id === modelData.app_id)
-              height: visible ? 34 : 0; width: 34; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
-              color: modelData.is_focused ? root.theme.bgSurface : "transparent"; border.width: modelData.is_focused ? 1 : 0; border.color: root.theme.accentPrimary
-              IconImage { anchors.fill: parent; anchors.margins: 2; source: "image://icon/" + root.resolveIcon(modelData.app_id) }
-              MouseArea { anchors.fill: parent; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = ["niri", "msg", "action", "focus-window", "--id", modelData.id.toString()]; p.running = true; } }
+              required property var modelData
+              visible: !root.pinnedApps.some(p => p.id === modelData.app_id)
+              height: visible ? 34 : 0
+              width: 34
+              radius: 8
+              anchors.horizontalCenter: parent.horizontalCenter
+              color: modelData.is_focused ? root.theme.bgSurface : "transparent"
+              border.width: modelData.is_focused ? 1 : 0
+              border.color: root.theme.accentPrimary
+
+              IconImage {
+                anchors.fill: parent
+                anchors.margins: 2
+                source: "image://icon/" + root.resolveIcon(modelData.app_id)
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  p.command = ["niri", "msg", "action", "focus-window", "--id", modelData.id.toString()];
+                  p.running = true;
+                }
+              }
             }
           }
         }
 
+        // Bottom: Status & Workspaces
         Column {
-          id: bottomArea; anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; width: parent.width; spacing: 8
+          id: bottomArea
+          anchors.bottom: parent.bottom
+          anchors.horizontalCenter: parent.horizontalCenter
+          width: parent.width
+          spacing: 8
 
-          // --- SCROLLABLE WORKSPACES (FIXED DIRECTION) ---
+          // Workspace Scroller
           MouseArea {
             id: wsScrollArea
-            width: parent.width; height: wsColumn.height
+            width: parent.width
+            height: wsColumn.height
             anchors.horizontalCenter: parent.horizontalCenter
+
             onWheel: (wheel) => {
               if (wheel.angleDelta.y === 0) return;
-
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
 
-              // Using 'down' and 'up' instead of 'next/prev' allows access to empty workspaces
-              // and fixes the directionality for natural scrolling.
-              if (wheel.angleDelta.y < 0) {
-                // Scroll Down -> Go Down the list (1 -> 2 -> 3)
+              if (wheel.angleDelta.y < 0)
                 p.command = ["niri", "msg", "action", "focus-workspace-down"];
-              } else {
-                // Scroll Up -> Go Up the list (3 -> 2 -> 1)
+              else
                 p.command = ["niri", "msg", "action", "focus-workspace-up"];
-              }
 
               p.running = true;
-
-              // Force refresh so the workspace dots update visually in the bar
               niriProc.running = false;
               niriProc.running = true;
             }
 
             Column {
-              id: wsColumn; spacing: 6; anchors.horizontalCenter: parent.horizontalCenter
+              id: wsColumn
+              spacing: 6
+              anchors.horizontalCenter: parent.horizontalCenter
               Repeater {
                 model: root.niriWorkspaces
                 Rectangle {
                   required property var modelData
-                  width: 10; height: modelData.is_focused ? 22 : 10; radius: 5;
+                  width: 10
+                  height: modelData.is_focused ? 22 : 10
+                  radius: 5
                   color: modelData.is_focused ? root.theme.accentPrimary : root.theme.bgSurface
                   anchors.horizontalCenter: parent.horizontalCenter
                 }
@@ -295,10 +585,15 @@ Scope {
             }
           }
 
+          // System Stats (CPU/Temp)
           Rectangle {
-            width: 38; height: 45; radius: 8; color: root.theme.bgSurface
+            width: 38
+            height: 45
+            radius: 8
+            color: root.theme.bgSurface
             Column {
-              anchors.centerIn: parent; spacing: 1
+              anchors.centerIn: parent
+              spacing: 1
               Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 11; anchors.horizontalCenter: parent.horizontalCenter }
               Text { text: SystemInfo.cpuUsage; font.pixelSize: 11; color: parseFloat(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
               Text { text: root.currentTemp; font.pixelSize: 11; color: parseInt(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
@@ -306,36 +601,66 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: cpuPopup.visible = !cpuPopup.visible }
           }
 
+          // Brightness/Volume
           Column {
-            spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 2
+            anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
-              width: 32; height: 32; radius: 16; color: root.theme.bgSurface; Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
-              MouseArea { anchors.fill: parent; onWheel: (wheel) => { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root); p.command = wheel.angleDelta.y > 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"]; p.running = true; } }
+              width: 32
+              height: 32
+              radius: 16
+              color: root.theme.bgSurface
+              Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
+              MouseArea {
+                anchors.fill: parent
+                onWheel: (wheel) => {
+                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                  p.command = wheel.angleDelta.y > 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
+                  p.running = true;
+                }
+              }
             }
             Rectangle {
-              width: 32; height: 32; radius: 16; color: root.theme.bgSurface; Text { anchors.centerIn: parent; text: Pipewire.defaultAudioSink?.audio?.muted ? "󰖁" : "󰕾"; color: root.theme.accentPrimary; font.pixelSize: 22 }
+              width: 32
+              height: 32
+              radius: 16
+              color: root.theme.bgSurface
+              Text { anchors.centerIn: parent; text: Pipewire.defaultAudioSink?.audio?.muted ? "󰖁" : "󰕾"; color: root.theme.accentPrimary; font.pixelSize: 22 }
               MouseArea {
-                anchors.fill: parent; onClicked: if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.muted = !Pipewire.defaultAudioSink.audio.muted
-                onWheel: (wheel) => { let s = Pipewire.defaultAudioSink?.audio; if (s) s.volume = Math.max(0, Math.min(1.5, s.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05))); }
+                anchors.fill: parent
+                onClicked: if (Pipewire.defaultAudioSink?.audio) Pipewire.defaultAudioSink.audio.muted = !Pipewire.defaultAudioSink.audio.muted
+                onWheel: (wheel) => {
+                  let s = Pipewire.defaultAudioSink?.audio;
+                  if (s) s.volume = Math.max(0, Math.min(1.5, s.volume + (wheel.angleDelta.y > 0 ? 0.05 : -0.05)));
+                }
               }
             }
           }
 
+          // System Tray
           Column {
-            spacing: 4; anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 4
+            anchors.horizontalCenter: parent.horizontalCenter
             Repeater {
               model: SystemTray.items
               IconImage {
-                required property var modelData; source: modelData.icon; implicitSize: 20
+                required property var modelData
+                source: modelData.icon
+                implicitSize: 20
                 MouseArea {
-                  anchors.fill: parent; acceptedButtons: Qt.LeftButton | Qt.RightButton
+                  anchors.fill: parent
+                  acceptedButtons: Qt.LeftButton | Qt.RightButton
                   onClicked: (mouse) => {
-                    if (mouse.button === Qt.RightButton) { modelData.secondaryActivate(); }
-                    else {
+                    if (mouse.button === Qt.RightButton) {
+                      modelData.secondaryActivate();
+                    } else {
                       if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
                         let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                        p.command = ["kitty", "--class", "nmtui-terminal", "-e", "nmtui"]; p.running = true;
-                      } else { modelData.activate(); }
+                        p.command = ["kitty", "--class", "nmtui-terminal", "-e", "nmtui"];
+                        p.running = true;
+                      } else {
+                        modelData.activate();
+                      }
                     }
                   }
                 }
@@ -343,17 +668,35 @@ Scope {
             }
           }
 
-          Rectangle { width: 36; height: 44; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
-            Text { anchors.centerIn: parent; text: Time.timeString.substring(0, 5); color: root.theme.textPrimary; font.pixelSize: 14; font.bold: true }
+          // Time/Clock
+          Rectangle {
+            width: 36
+            height: 44
+            radius: 8
+            color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
+            Text {
+              anchors.centerIn: parent
+              text: Time.timeString.substring(0, 5)
+              color: root.theme.textPrimary
+              font.pixelSize: 14
+              font.bold: true
+            }
             MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
           }
 
-          Rectangle { width: 34; height: 34; radius: 17; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
+          // Power Button
+          Rectangle {
+            width: 34
+            height: 34
+            radius: 17
+            color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
             MouseArea { anchors.fill: parent; onClicked: powerPopup.visible = !powerPopup.visible }
           }
-        }
-      }
-    }
-  }
+        } // End Bottom Area
+      } // End Main Bar Content
+    } // End PanelWindow
+  } // End Variants
 }
