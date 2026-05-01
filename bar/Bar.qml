@@ -49,7 +49,7 @@ Scope {
     }
     // Adding this will help us see if Quickshell is hitting any snags
     stderr: StdioCollector {
-      onRead: data => console.log("Process Error:", data.toString())
+     // onRead: data => console.log("Process Error:", data.toString())
     }
   }
 
@@ -278,7 +278,7 @@ Scope {
                 anchors.fill: parent
                 onClicked: {
                   let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = ["kitty", "-e", "ikhal"];
+                  p.command = ["kitty", "--class" , "calendar", "-e", "ikhal"];
                   p.running = true;
                   calendarPopup.visible = false;
                 }
@@ -331,8 +331,8 @@ Scope {
 
             Repeater {
               model: [
-                { t: "Logout", i: "󰍃", c: root.theme.textPrimary, cmd: ["niri", "msg", "action", "quit"] },
-                { t: "Reboot", i: "󰑓", c: root.theme.textPrimary, cmd: ["systemctl", "reboot"] },
+                { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit"] },
+                { t: "Reboot", i: "󰑓", c: "#00aa7f", cmd: ["systemctl", "reboot"] },
                 { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
               ]
 
@@ -458,7 +458,7 @@ Scope {
 
           // CPU/Temp
           Rectangle {
-            width: 38; height: 45; radius: 8; color: root.theme.bgSurface
+            width: 40; height: 45; radius: 8; color: root.theme.bgSurface
             Column {
               anchors.centerIn: parent; spacing: 1
               Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 11; anchors.horizontalCenter: parent.horizontalCenter }
@@ -469,45 +469,49 @@ Scope {
           }
 
           // Vol/Bright
-          Column {
-            spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
-            Rectangle {
-              width: 34; height: 34; radius: 6
 
-              // Use root.numLockActive to ensure it's looking at the Scope property
-              color: root.numLockActive ? root.theme.bgSelected : "transparent"
-              border.width: 1
-              border.color: root.numLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+            Row {
+              spacing: 1
+              anchors.horizontalCenter: parent.horizontalCenter
+              // --- NUM LOCK ---
+              Rectangle {
+                width: 22; height: 22; radius: 6
+                color: root.numLockActive ? root.theme.bgSelected : "transparent"
+                border.width: 1
+                border.color: root.numLockActive ? root.theme.accentPrimary : root.theme.bgSurface
 
-              Text {
-                anchors.centerIn: parent
-                text: "1"
-                font.pixelSize: 14
-                font.bold: true
-                // Make sure this color contrast is high enough to see
-                color: root.numLockActive ? "#FFFFFF" : root.theme.textMuted
+                Text {
+                  anchors.centerIn: parent
+                  text: "1"
+                  font.pixelSize: 13
+                  font.bold: true
+                  color: root.numLockActive ? "#FFFFFF" : root.theme.textMuted
+                }
+                Behavior on color { ColorAnimation { duration: 200 } }
+              }
+              // --- CAPS LOCK ---
+              Rectangle {
+                width: 22; height: 22; radius: 6
+                color: root.capsLockActive ? root.theme.bgSelected : "transparent"
+                border.width: 1
+                border.color: root.capsLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+
+                Text {
+                  anchors.centerIn: parent
+                  text: "A"
+                  font.pixelSize: 13
+                  font.bold: true
+                  color: root.capsLockActive ? "#FFFFFF" : root.theme.textMuted
+                }
+                Behavior on color { ColorAnimation { duration: 200 } }
               }
 
-              Behavior on color { ColorAnimation { duration: 200 } }
-            }
-            Rectangle {
-              width: 34; height: 34; radius: 6
-              color: root.capsLockActive ? root.theme.bgSelected : "transparent"
-              border.width: 1
-              border.color: root.capsLockActive ? root.theme.accentPrimary : root.theme.bgSurface
 
-              Text {
-                anchors.centerIn: parent
-                text: "A" // "A" for Caps, "1" for Num
-                font.pixelSize: 14
-                font.bold: true
-                color: root.capsLockActive ? "#FFFFFF" : root.theme.textMuted
-              }
-
-              Behavior on color { ColorAnimation { duration: 200 } }
             }
+            Column {
+              spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
-              width: 32; height: 32; radius: 16; color: root.theme.bgSurface
+              width: 32; height: 26; radius: 16; color: root.theme.bgSurface
               Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
               MouseArea {
                 anchors.fill: parent
@@ -519,7 +523,7 @@ Scope {
               }
             }
             Rectangle {
-              width: 32; height: 32; radius: 16; color: root.theme.bgSurface
+              width: 32; height: 26; radius: 16; color: root.theme.bgSurface
               Text { anchors.centerIn: parent; text: Pipewire.defaultAudioSink?.audio?.muted ? "󰖁" : "󰕾"; color: root.theme.accentPrimary; font.pixelSize: 22 }
               MouseArea {
                 anchors.fill: parent
@@ -552,14 +556,14 @@ Scope {
 
           // Time
           Rectangle {
-            width: 36; height: 44; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
+            width: 46; height: 24; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: Time.timeString.substring(0, 5); color: root.theme.textPrimary; font.pixelSize: 14; font.bold: true }
             MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
           }
 
           // Power
           Rectangle {
-            width: 34; height: 34; radius: 17; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
+            width: 34; height: 20; radius: 10; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
             MouseArea { anchors.fill: parent; onClicked: powerPopup.visible = !powerPopup.visible }
           }
