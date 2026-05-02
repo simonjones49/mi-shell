@@ -310,7 +310,7 @@ Scope {
             anchors.centerIn: parent; spacing: 25
             Repeater {
               model: [
-                { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit"] },
+                { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit","--skip-confirmation"] },
                 { t: "Reboot", i: "󰑓", c: "#00aa7f", cmd: ["systemctl", "reboot"] },
                 { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
               ]
