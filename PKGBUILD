@@ -45,24 +45,17 @@ pkgver() {
 }
 
 package() {
-  # 1. Install to /etc/xdg for system-wide defaults
+  # 1. Install to /etc/xdg/quickshell/mi-shell
+  # This allows Quickshell to find it via XDG_CONFIG_DIRS fallback
   install -d "${pkgdir}/etc/xdg/quickshell/mi-shell"
   cp -r "${srcdir}/${pkgname}/"* "${pkgdir}/etc/xdg/quickshell/mi-shell/"
 
-  # 2. Create the 'mi-shell' wrapper
+  # 2. Install scripts to /usr/bin
   install -d "${pkgdir}/usr/bin"
-  cat <<EOF > "${pkgdir}/usr/bin/mi-shell"
-#!/bin/sh
-mkdir -p "\$HOME/.config/quickshell/mi-shell"
-exec quickshell -c mi-shell "\$@"
-EOF
-  chmod +x "${pkgdir}/usr/bin/mi-shell"
-
-  # 3. Install all three scripts
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-sync" "${pkgdir}/usr/bin/mi-sync"
 
-  # 4. Clean up the system-wide folder
+  # 3. Clean up the config folder
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/mi-shell.install"

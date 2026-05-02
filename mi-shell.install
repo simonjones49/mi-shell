@@ -5,11 +5,13 @@ post_install() {
   echo '   spawn-at-startup "swww-daemon"'
   echo '   spawn-at-startup "mi-sync"'
   echo '   spawn-at-startup "mi-power"'
-  echo '   spawn-at-startup "mi-shell"'
+  echo '   spawn-at-startup "quickshell" "-c" "mi-shell"'
   echo ""
   echo "2. Configuration:"
-  echo "   - Local tweaks: ~/.config/quickshell/mi-shell/"
+  echo "   - Local tweaks:   ~/.config/quickshell/mi-shell/"
   echo "   - System defaults: /etc/xdg/quickshell/mi-shell/"
+  echo ""
+  echo "   Note: To customize, copy the system defaults to your local tweaks folder."
   echo ""
   echo "3. Optional Extras:"
   echo "   - For calendar sync: Install 'vdirsyncer' and run 'vdirsyncer sync'"

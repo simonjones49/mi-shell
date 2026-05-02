@@ -70,7 +70,7 @@ spawn-at-startup "swww-daemon"
 # Mi-shell components
 spawn-at-startup "mi-sync"
 spawn-at-startup "mi-power"
-spawn-at-startup "mi-shell"
+spawn-at-startup "quickshell" "-c" "mi-shell"
 ```
 
 > **Note:** The `mi-shell` command ensures your local configuration directory exists at `~/.config/quickshell/mi-shell/`. The system-wide default configuration is installed at `/etc/xdg/quickshell/mi-shell/`.
