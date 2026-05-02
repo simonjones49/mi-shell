@@ -3,9 +3,9 @@ This is my version of a quickshell bar and tools.
 
 It is vertical and for now there is no settings panel, everything is done via the config files. This may change over time but I am just setting this up for me. 
 
-This started off as project to use https://github.com/doannc2212/quickshell-config instead of the legacy Noctalia.
+This started off as project to use something instead of the legacy Noctalia.
 
-It ended up becoming an new system which is growing as I get the time. 
+It ended up becoming a new system which is growing as I get the time. 
 
 It has pinned apps with chosen icons, the icon lights up when in use and dims when closed. Running apps appear below. 
 
@@ -34,16 +34,19 @@ these are needed regardless of which modules you use:
 
 - [Quickshell](https://quickshell.outfoxxed.me/) + Qt 6
 - niri
+- swww
 - swayidle
-- awww
+- swaylock
+- wayland-idle-inhibitor
 
 optional, depending on which modules you use:
 
 - `brightnessctl` — for brightness display and control in the bar and OSD
 - `nmcli` — for wifi network info from the tray
 - `/sys/class/power_supply/` — for battery info (standard on most laptops)
-- `swww` — for the wallpaper manager
+- nerd-fonts
 - blueman - bluetooth control
 - khal - Calendar app
 - Vdirsyncer - to sync the calendar data
 
+Thanks to https://github.com/doannc2212/quickshell-config for the initial inspiration.
