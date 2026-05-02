@@ -20,10 +20,8 @@ depends=(
   'khal'
   'brightnessctl'
   'networkmanager'
-  'ttf-nerd-fonts-symbols'
   'procps-ng'
   'libnotify'
-  'bash'
   'pipewire'
   'kitty'
   'polkit-gnome'
@@ -34,6 +32,7 @@ optdepends=(
   'kate: Recommended text editor'
   'floorp: Recommended web browser for bar shortcuts'
   'mpv: Recommended media player'
+  'nerd-fonts-git: fonts used in calendar'
 )
 makedepends=('git')
 

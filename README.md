@@ -43,7 +43,6 @@ These will be installed automatically if you use the `PKGBUILD`:
 * **pipewire** (Audio support)
 * **gnome-polkit** (GUI password support)
 
-
 ### Optional
 Install these for full functionality:
 * **vdirsyncer**: For Google/CalDAV calendar synchronization.
@@ -51,7 +50,6 @@ Install these for full functionality:
 * **kate**: Recommended text editor.
 * **floorp**: Recommended browser.
 * **mpv**: Recommended video.
-* **wayland-idle-inhibitor-git** Required for mi-power script.
 
 ## Installation
 
