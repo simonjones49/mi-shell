@@ -26,8 +26,7 @@ depends=(
   'bash'
   'pipewire'
   'kitty'
-  'wayland-idle-inhibitor-git'
-
+  'polkit-gnome'
 )
 optdepends=(
   'vdirsyncer: Optional: Only needed if you want to sync your local khal calendar with Google/CalDAV'
@@ -61,6 +60,7 @@ EOF
   chmod +x "${pkgdir}/usr/bin/mi-shell"
 
   # Install your scripts
+  install -m755 "${srcdir}/${pkgname}/scripts/mi-idle" "${pkgdir}/usr/bin/mi-idle"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-sync" "${pkgdir}/usr/bin/mi-sync"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-idle" "${pkgdir}/usr/bin/mi-idle"

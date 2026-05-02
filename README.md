@@ -62,7 +62,12 @@ To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will au
 ### Niri Configuration
 To start the shell and its helper services automatically, add the following lines to your `~/.config/niri/config.kdl`:
 
+
 ```kdl
+# Authentication agent for password popups
+spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+
+# Mi-shell components
 spawn-at-startup "mi-idle"
 spawn-at-startup "mi-sync"
 spawn-at-startup "mi-power"
