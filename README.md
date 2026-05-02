@@ -27,6 +27,8 @@ The pop out calendar links directly to khal and the system widget has informatio
 | **OSD** | on-screen display for volume and brightness changes, auto-hides |
 | **Theme Switcher** | 206 themes across 6 families, persists across restarts |
 | **Wallpaper Manager** | grid picker for wallpapers, preview, swww |
+| **Key Lock** | Number and caps lock on the bar |
+| **Power Menu** | Shut down, reboot and logout from the bar |
 
 ## Dependencies
 
@@ -50,7 +52,7 @@ Install these for full functionality:
 * **kate**: Recommended text editor.
 * **floorp**: Recommended browser.
 * **mpv**: Recommended video.
-* **wayland-idle-inhibitor-git** Required for mi-power script'
+* **wayland-idle-inhibitor-git** Required for mi-power script.
 
 ## Installation
 
