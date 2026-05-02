@@ -9,30 +9,34 @@ license=('GPL')
 install=mi-shell.install
 
 depends=(
-  'quickshell'
-  'qt6-5compat'
+
+  'quickshell-git'
+  'qt6-wayland'
   'qt6-svg'
+
+
   'niri'
-  'swww'
-  'swayidle'
-  'swaylock'
-  'blueman'
-  'khal'
-  'brightnessctl'
-  'networkmanager'
-  'procps-ng'
-  'libnotify'
-  'pipewire'
-  'kitty'
   'polkit-gnome'
+  'swww'
+  'libnotify'
+
+
+  'pipewire'        # Audio
+  'brightnessctl'   # Brightness
+  'khal'            # Calendar
+  'networkmanager'  # Network
+  'kitty'           # The default terminal for bar shortcuts
 )
+
 optdepends=(
+  'blueman: for the Bluetooth manager UI'
+  'floorp: for the browser shortcuts'
+  'playerctl: recommended for better MPRIS control'
   'vdirsyncer: Optional: Only needed if you want to sync your local khal calendar with Google/CalDAV'
   'dolphin: Recommended file manager'
   'kate: Recommended text editor'
-  'floorp: Recommended web browser for bar shortcuts'
   'mpv: Recommended media player'
-  'nerd-fonts-git: fonts used in calendar'
+  'nerd-fonts-git: fonts used in notifications'
 )
 makedepends=('git')
 

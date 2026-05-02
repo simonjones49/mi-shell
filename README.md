@@ -34,26 +34,36 @@ The pop out calendar links directly to khal and the system widget has informatio
 
 ### Required
 These will be installed automatically if you use the `PKGBUILD`:
-* **quickshell** & **Qt6 modules** (5compat, svg, wayland)
-* **niri** (Window manager)
-* **swww**, **swayidle**, **swaylock** (Wallpaper & Power management)
-* **blueman**, **brightnessctl**, **networkmanager** (Hardware controls)
-* **khal** (Calendar backend)
-* **kitty** (Default terminal)
-* **pipewire** (Audio support)
-* **gnome-polkit** (GUI password support)
 
-### Optional
-Install these for full functionality:
-* **vdirsyncer**: For Google/CalDAV calendar synchronization.
-* **dolphin**: Recommended file manager.
-* **kate**: Recommended text editor.
-* **floorp**: Recommended browser.
-* **mpv**: Recommended video.
+* quickshell-git
+* qt6-wayland
+* qt6-svg
+* niri
+* polkit-gnome
+* swww
+* libnotify
+* pipewire
+* brightnessctl   
+* khal
+* networkmanager
+* kitty
+  
+
+Optional
+
+* blueman: for the Bluetooth manager UI
+* floorp: for the browser shortcuts
+* playerctl: recommended for better MPRIS control
+* vdirsyncer: Optional: Only needed if you want to sync your local khal calendar with Google/CalDAV
+* dolphin: Recommended file manager
+* kate: Recommended text editor
+* mpv: Recommended media player
+* nerd-fonts-git: fonts used in notifications
+  
 
 ## Installation
 
-To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will automatically install all necessary dependencies (niri, swww, blueman, etc.).
+To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will automatically install all necessary dependencies (niri, swww, etc.).
 
 1. Clone this repository.
 2. Run `makepkg -si`.
@@ -65,7 +75,7 @@ To start the shell and its helper services automatically, add the following line
 ```kdl
 # Authentication agent for password popups
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-spawn-at-startup "swww-daemon"
+spawn-at-startup "awww-daemon"
 
 # Mi-shell components
 spawn-at-startup "mi-sync"
