@@ -19,10 +19,10 @@ Scope {
   property string currentTemp: "--"
   property string sysDetails: "Loading stats..."
   property string agendaDetails: "No upcoming events."
-  property string calOutput: ""
   property bool numLockActive: false
+  property bool capsLockActive: false
 
-
+  // --- TIMERS & PROCESSES ---
   Timer {
     interval: 500
     running: true
@@ -30,45 +30,28 @@ Scope {
     onTriggered: {
       numLockCheck.running = false;
       numLockCheck.running = true;
-
-      capsLockCheck.running = false; // Add this
-      capsLockCheck.running = true;  // Add this
+      capsLockCheck.running = false;
+      capsLockCheck.running = true;
     }
   }
+
   Process {
     id: numLockCheck
     command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::numlock/brightness && echo '1' || echo '0'"]
     running: false
     stdout: StdioCollector {
-      // onStreamFinished waits for the process to exit, then gives us the full text
-      onStreamFinished: {
-        let status = text.trim();
-        //console.log("NumLock Polled Status:", status); // This SHOULD show in terminal now
-        root.numLockActive = (status === "1");
-      }
-    }
-    // Adding this will help us see if Quickshell is hitting any snags
-    stderr: StdioCollector {
-     // onRead: data => console.log("Process Error:", data.toString())
+      onStreamFinished: { root.numLockActive = (text.trim() === "1"); }
     }
   }
 
-  // In your properties section
-  property bool capsLockActive: false
-
-  // The new process
   Process {
     id: capsLockCheck
     command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::capslock/brightness && echo '1' || echo '0'"]
     running: false
     stdout: StdioCollector {
-      onStreamFinished: {
-        let status = text.trim();
-        root.capsLockActive = (status === "1");
-      }
+      onStreamFinished: { root.capsLockActive = (text.trim() === "1"); }
     }
   }
-
 
   property var pinnedApps: [
     { id: "floorp", icon: "browser", exec: "floorp" },
@@ -99,7 +82,6 @@ Scope {
   }
 
   // --- DATA FETCHING ---
-
   Process {
     id: niriProc
     command: ["sh", "-c", "niri msg -j workspaces && echo '---SEP---' && niri msg -j windows"]
@@ -119,23 +101,7 @@ Scope {
       }
     }
   }
-  Process {
-    id: calProc
-    // The <pre> tag forces the UI to respect the newlines and spacing exactly as 'cal' sends them
-    command: ["sh", "-c", "cal -m | sed -E 's/\\b" + new Date().getDate() + "\\b/<font color=\"#fb4934\">" + new Date().getDate() + "<\\/font>/'"]
-    running: root.theme !== undefined
 
-    stdout: StdioCollector {
-      onStreamFinished: {
-        let lines = text.split('\n');
-        if (lines.length > 1) {
-          lines.shift();
-          // Wrapping the whole thing in <pre> tags
-          root.calOutput = "<pre>" + lines.join('\n') + "</pre>";
-        }
-      }
-    }
-  }
   Process {
     id: tempProc
     command: ["cat", "/sys/class/thermal/thermal_zone0/temp"]
@@ -198,7 +164,6 @@ Scope {
       color: root.theme.bgBase
 
       // --- POPUPS ---
-
       PopupWindow {
         id: cpuPopup
         anchor.window: mainBar
@@ -207,14 +172,13 @@ Scope {
         implicitWidth: 280
         implicitHeight: 180
         visible: false
-               color: "transparent"
+        color: "transparent"
         Connections {
           target: cpuPopup
           function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } }
         }
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface
-          radius: 10
+          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 8
             Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
@@ -237,34 +201,66 @@ Scope {
           target: calendarPopup
           function onVisibleChanged() {
             if (calendarPopup.visible) {
-              // Force the processes to restart by toggling running to false then true
-              calProc.running = false;
-              calProc.running = true;
-
               agendaProc.running = false;
               agendaProc.running = true;
             }
           }
         }
+
         Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface
-          radius: 10
+          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 12
+
             Text {
               text: Qt.formatDateTime(new Date(), "MMMM yyyy");
               color: root.theme.accentPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
             }
-            Text {
-              text: root.calOutput
-              textFormat: Text.StyledText
-              color: root.theme.textPrimary
-              font.family: "Monospace" // CRITICAL for grid alignment
-              font.pixelSize: 17
-              lineHeight: 1.2
-              horizontalAlignment: Text.AlignLeft // Better for calendar grids
+
+            // --- PURE QML CALENDAR GRID ---
+            GridLayout {
+              columns: 7
+              rowSpacing: 8
+              columnSpacing: 8
               anchors.horizontalCenter: parent.horizontalCenter
+
+              Repeater {
+                model: ["S", "M", "T", "W", "T", "F", "S"]
+                Text {
+                  text: modelData
+                  color: root.theme.textMuted
+                  font.pixelSize: 12
+                  Layout.alignment: Qt.AlignHCenter
+                }
+              }
+
+              Repeater {
+                model: 42
+                delegate: Rectangle {
+                  implicitWidth: 30
+                  implicitHeight: 30
+                  radius: 4
+
+                  readonly property var now: new Date()
+                  readonly property var firstDay: new Date(now.getFullYear(), now.getMonth(), 1)
+                  readonly property int offset: firstDay.getDay()
+                  readonly property int dayNumber: index - offset + 1
+                  readonly property bool isCurrentMonth: dayNumber > 0 && dayNumber <= new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+                  readonly property bool isToday: isCurrentMonth && dayNumber === now.getDate()
+
+                  color: isToday ? root.theme.accentPrimary : "transparent"
+
+                  Text {
+                    anchors.centerIn: parent
+                    text: isCurrentMonth ? dayNumber : ""
+                    color: isToday ? root.theme.bgBase : (isCurrentMonth ? root.theme.textPrimary : "transparent")
+                    font.bold: isToday
+                  }
+                }
+              }
             }
+            // --- END CALENDAR GRID ---
+
             Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
             Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
             ScrollView {
@@ -293,67 +289,44 @@ Scope {
         visible: false
         focusable: true
         color: "transparent"
-
-        // Use the same focus logic as your launcher
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-
-        // Fill the screen so we can catch clicks outside the center box
         anchors { top: true; bottom: true; left: true; right: true }
 
-        // Click anywhere outside the menu to close it
         MouseArea {
           anchors.fill: parent
           onClicked: powerPopup.visible = false
-          // Optional: darken the background slightly like the launcher
-          onVisibleChanged: {
-            if (visible) {
-              powerBox.forceActiveFocus();
-            }
-          }
+          onVisibleChanged: { if (visible) powerBox.forceActiveFocus(); }
           Rectangle { anchors.fill: parent; color: root.theme.bgOverlay }
         }
 
         Rectangle {
           id: powerBox
-          focus: true // Add this so it's allowed to take focus
+          focus: true
           anchors.centerIn: parent
-          width: 420
-          height: 120
-          radius: 12
-          color: root.theme.bgBase
-          border.width: 2
-          border.color: root.theme.bgSurface
-
+          width: 420; height: 120; radius: 12
+          color: root.theme.bgBase; border.width: 2; border.color: root.theme.bgSurface
           Row {
-            anchors.centerIn: parent
-            spacing: 25
-
+            anchors.centerIn: parent; spacing: 25
             Repeater {
               model: [
                 { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit"] },
                 { t: "Reboot", i: "󰑓", c: "#00aa7f", cmd: ["systemctl", "reboot"] },
                 { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
               ]
-
               Rectangle {
-                width: 110; height: 90
-                radius: 10
+                width: 110; height: 90; radius: 10
                 color: pwrMouse.containsMouse ? root.theme.bgSurface : "transparent"
-
                 Column {
-                  anchors.centerIn: parent
-                  spacing: 8
+                  anchors.centerIn: parent; spacing: 8
                   Text { text: modelData.i; color: modelData.c; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
                   Text { text: modelData.t; color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
                 }
-
                 MouseArea {
                   id: pwrMouse
-                  anchors.fill: parent
-                  hoverEnabled: true
+                  anchors.fill: parent; hoverEnabled: true
                   onClicked: {
-                    powerPopup.visible = false // Close first
+                    powerPopup.visible = false
                     let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
                     p.command = modelData.cmd;
                     p.running = true;
@@ -362,11 +335,8 @@ Scope {
               }
             }
           }
-
-          // Allow ESC key to close it just like the launcher
           Keys.onEscapePressed: powerPopup.visible = false
         }
-
       }
 
       // --- MAIN BAR CONTENT ---
@@ -374,7 +344,6 @@ Scope {
         anchors.fill: parent
         anchors.margins: 6
 
-        // Launcher Toggle
         Rectangle {
           width: 34; height: 34; radius: 8; color: root.theme.bgSurface; anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
           Text { text: "󰀻"; anchors.centerIn: parent; color: root.theme.accentPrimary; font.pixelSize: 36 }
@@ -388,7 +357,6 @@ Scope {
           }
         }
 
-        // Apps
         Column {
           y: 350; width: parent.width; spacing: 8
           Repeater {
@@ -413,8 +381,6 @@ Scope {
               }
             }
           }
-
-          // Unpinned Windows
           Repeater {
             model: root.niriWindows
             delegate: Rectangle {
@@ -435,11 +401,8 @@ Scope {
           }
         }
 
-        // Status Area
         Column {
           anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; width: parent.width; spacing: 8
-
-          // Workspaces
           MouseArea {
             width: parent.width; height: wsColumn.height; anchors.horizontalCenter: parent.horizontalCenter
             onWheel: (wheel) => {
@@ -456,7 +419,6 @@ Scope {
             }
           }
 
-          // CPU/Temp
           Rectangle {
             width: 40; height: 45; radius: 8; color: root.theme.bgSurface
             Column {
@@ -468,48 +430,24 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: cpuPopup.visible = !cpuPopup.visible }
           }
 
-          // Vol/Bright
-
-            Row {
-              spacing: 1
-              anchors.horizontalCenter: parent.horizontalCenter
-              // --- NUM LOCK ---
-              Rectangle {
-                width: 22; height: 22; radius: 6
-                color: root.numLockActive ? root.theme.bgSelected : "transparent"
-                border.width: 1
-                border.color: root.numLockActive ? root.theme.accentPrimary : root.theme.bgSurface
-
-                Text {
-                  anchors.centerIn: parent
-                  text: "1"
-                  font.pixelSize: 13
-                  font.bold: true
-                  color: root.numLockActive ? "#FFFFFF" : root.theme.textMuted
-                }
-                Behavior on color { ColorAnimation { duration: 200 } }
-              }
-              // --- CAPS LOCK ---
-              Rectangle {
-                width: 22; height: 22; radius: 6
-                color: root.capsLockActive ? root.theme.bgSelected : "transparent"
-                border.width: 1
-                border.color: root.capsLockActive ? root.theme.accentPrimary : root.theme.bgSurface
-
-                Text {
-                  anchors.centerIn: parent
-                  text: "A"
-                  font.pixelSize: 13
-                  font.bold: true
-                  color: root.capsLockActive ? "#FFFFFF" : root.theme.textMuted
-                }
-                Behavior on color { ColorAnimation { duration: 200 } }
-              }
-
-
+          Row {
+            spacing: 1; anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle {
+              width: 22; height: 22; radius: 6
+              color: root.numLockActive ? root.theme.bgSelected : "transparent"
+              border.width: 1; border.color: root.numLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+              Text { anchors.centerIn: parent; text: "1"; font.pixelSize: 13; font.bold: true; color: root.numLockActive ? "#FFFFFF" : root.theme.textMuted }
             }
-            Column {
-              spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle {
+              width: 22; height: 22; radius: 6
+              color: root.capsLockActive ? root.theme.bgSelected : "transparent"
+              border.width: 1; border.color: root.capsLockActive ? root.theme.accentPrimary : root.theme.bgSurface
+              Text { anchors.centerIn: parent; text: "A"; font.pixelSize: 13; font.bold: true; color: root.capsLockActive ? "#FFFFFF" : root.theme.textMuted }
+            }
+          }
+
+          Column {
+            spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
               width: 32; height: 26; radius: 16; color: root.theme.bgSurface
               Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
@@ -536,7 +474,6 @@ Scope {
             }
           }
 
-          // Tray
           Column {
             spacing: 4; anchors.horizontalCenter: parent.horizontalCenter
             Repeater {
@@ -554,14 +491,12 @@ Scope {
             }
           }
 
-          // Time
           Rectangle {
             width: 46; height: 24; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: Time.timeString.substring(0, 5); color: root.theme.textPrimary; font.pixelSize: 14; font.bold: true }
             MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
           }
 
-          // Power
           Rectangle {
             width: 34; height: 20; radius: 10; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
