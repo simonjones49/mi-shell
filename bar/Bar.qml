@@ -126,7 +126,7 @@ Scope {
           root.sysDetails = "Distro: " + lines[0] + "\n" +
           "Kernel: " + lines[1] + "\n" +
           "Uptime: " + lines[2] + "\n" +
-          "RAM    : " + lines[3] + "\n" +
+          "RAM   : " + lines[3] + "\n" +
           "Disk /: " + lines[4]  + "\n" +
           "Home  : " + lines[5];
         }
@@ -168,7 +168,7 @@ Scope {
         id: cpuPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 690
+        anchor.rect.y: mainBar.height - 750
         implicitWidth: 280
         implicitHeight: 180
         visible: false
@@ -191,9 +191,9 @@ Scope {
         id: calendarPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 500
+        anchor.rect.y: mainBar.height - 560
         implicitWidth: 280
-        implicitHeight: 510
+        implicitHeight: 555
         visible: false
         color: "transparent"
 
@@ -225,7 +225,7 @@ Scope {
               anchors.horizontalCenter: parent.horizontalCenter
 
               Repeater {
-                model: ["S", "M", "T", "W", "T", "F", "S"]
+                model: ["M", "T", "W", "T", "F", "S", "S"]
                 Text {
                   text: modelData
                   color: root.theme.textMuted
@@ -262,7 +262,7 @@ Scope {
             // --- END CALENDAR GRID ---
 
             Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
-            Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
+            Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 16 }
             ScrollView {
               width: parent.width; height: 160; clip: true
               Text { width: 250; text: root.agendaDetails; color: root.theme.textPrimary; font.pixelSize: 13; font.family: "Monospace"; wrapMode: Text.Wrap }
