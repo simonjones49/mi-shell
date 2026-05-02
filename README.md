@@ -28,25 +28,46 @@ The pop out calendar links directly to khal and the system widget has informatio
 | **Theme Switcher** | 206 themes across 6 families, persists across restarts |
 | **Wallpaper Manager** | grid picker for wallpapers, preview, swww |
 
-## prerequisites
+## Dependencies
 
-these are needed regardless of which modules you use:
+### Required
+These will be installed automatically if you use the `PKGBUILD`:
+* **quickshell** & **Qt6 modules** (5compat, svg, wayland)
+* **niri** (Window manager)
+* **swww**, **swayidle**, **swaylock** (Wallpaper & Power management)
+* **blueman**, **brightnessctl**, **networkmanager** (Hardware controls)
+* **khal** (Calendar backend)
+* **kitty** (Default terminal)
+* **pipewire** (Audio support)
 
-- [Quickshell](https://quickshell.outfoxxed.me/) + Qt 6
-- niri
-- swww
-- swayidle
-- swaylock
-- wayland-idle-inhibitor
+### Optional
+Install these for full functionality:
+* **vdirsyncer**: For Google/CalDAV calendar synchronization.
+* **wayland-idle-inhibitor-git**: Required for the `mi-power` auto-sleep prevention.
+* **dolphin**: Recommended file manager.
+* **kate**: Recommended text editor.
+* **floorp**: Recommended browser.
 
-optional, depending on which modules you use:
 
-- `brightnessctl` — for brightness display and control in the bar and OSD
-- `nmcli` — for wifi network info from the tray
-- `/sys/class/power_supply/` — for battery info (standard on most laptops)
-- nerd-fonts
-- blueman - bluetooth control
-- khal - Calendar app
-- Vdirsyncer - to sync the calendar data
+## Installation
+
+To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will automatically install all necessary dependencies (niri, swww, blueman, etc.).
+
+1. Clone this repository.
+2. Run `makepkg -si`.
+
+### Niri Configuration
+To start the shell and its helper services automatically, add the following lines to your `~/.config/niri/config.kdl`:
+
+```kdl
+spawn-at-startup "mi-idle"
+spawn-at-startup "mi-sync"
+spawn-at-startup "mi-power"
+spawn-at-startup "mi-shell"
+```
+
+> **Note:** The `mi-shell` command ensures your local configuration directory exists at `~/.config/quickshell/mi-shell/`. The system-wide default configuration is installed at `/etc/xdg/quickshell/mi-shell/`.
+
+
 
 Thanks to https://github.com/doannc2212/quickshell-config for the initial inspiration.

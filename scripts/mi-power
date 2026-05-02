@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# --- CONFIGURATION ---
+TARGET_PROCESSES=("cmus" "zenity" "wine" "wineserver" "andi2pc.py" "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "upload_videos_fixed.sh" "usb_backup.sh" "avidemux")
+CHECK_INTERVAL=30
+# ---------------------
+
+WAS_INHIBITED=false
+INHIBITOR_PID=""
+
+send_notification() {
+    # $1: Message, $2: Icon Name
+    notify-send "Mi-shell Power" "$1" -i "$2" -t 3000
+}
+
+cleanup() {
+    if [ -n "$INHIBITOR_PID" ]; then
+        kill "$INHIBITOR_PID" 2>/dev/null
+    fi
+    exit
+}
+trap cleanup SIGINT SIGTERM
+
+while true; do
+    MATCH_FOUND=false
+
+    for PROC in "${TARGET_PROCESSES[@]}"; do
+        if pgrep -f "$PROC" > /dev/null; then
+            MATCH_FOUND=true
+            break
+        fi
+    done
+
+    if [[ "$MATCH_FOUND" == true ]] && [[ "$WAS_INHIBITED" == false ]]; then
+        # Launch inhibitor (make sure wayland-idle-inhibitor.py is in your PATH)
+        wayland-idle-inhibitor.py &
+        INHIBITOR_PID=$!
+        # Use the Quickshell icon or the 'unlocked' icon
+        send_notification "Keep Awake: ENABLED" "keepassxc-unlocked"
+        WAS_INHIBITED=true
+
+    elif [[ "$MATCH_FOUND" == false ]] && [[ "$WAS_INHIBITED" == true ]]; then
+        if [ -n "$INHIBITOR_PID" ]; then
+            kill "$INHIBITOR_PID"
+            INHIBITOR_PID=""
+        fi
+        # Use the 'locked' icon to show system is back to normal
+        send_notification "Keep Awake: DISABLED" "keepassxc-locked"
+        WAS_INHIBITED=false
+    fi
+
+    sleep "$CHECK_INTERVAL"
+done

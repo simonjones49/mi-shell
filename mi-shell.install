@@ -1,0 +1,21 @@
+post_install() {
+  echo ":: MI-SHELL SETUP ::"
+  echo "1. Add these to your niri config (~/.config/niri/config.kdl):"
+  echo '   spawn-at-startup "mi-idle"'
+  echo '   spawn-at-startup "mi-sync"'
+  echo '   spawn-at-startup "mi-power"'
+  echo '   spawn-at-startup "mi-shell"'
+  echo ""
+  echo "2. Configuration:"
+  echo "   - Local tweaks: ~/.config/quickshell/mi-shell/"
+  echo "   - System defaults: /etc/xdg/quickshell/mi-shell/"
+  echo ""
+  echo "3. Optional Extras:"
+  echo "   - For calendar sync: Install 'vdirsyncer' and run 'vdirsyncer sync'"
+  echo "   - For idle inhibition: Install 'wayland-idle-inhibitor-git'"
+  echo ""
+}
+
+post_upgrade() {
+  post_install
+}

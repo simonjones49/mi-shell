@@ -1,0 +1,10 @@
+#!/bin/bash
+# Check if swayidle is already running to avoid duplicates
+if ! pgrep -f "swayidle" > /dev/null; then
+    swayidle -w \
+        timeout 300 'niri msg action power-off-monitors' \
+        timeout 360 'swaylock -f -c 000000' \
+        timeout 600 'systemctl suspend' \
+        resume 'niri msg action power-on-monitors' \
+        before-sleep 'swaylock -f -c 000000' &
+fi

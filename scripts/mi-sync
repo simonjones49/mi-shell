@@ -1,0 +1,35 @@
+#!/bin/bash
+
+STATE_FILE="/home/simon/.calendar_last_sync"
+#SYNC_INTERVAL=10800  # 3 hours
+SYNC_INTERVAL=1800  # Changed to half an hour
+
+# Initial settle time
+sleep 30
+
+while :; do
+    NOW=$(date +%s)
+
+    if [ -f "$STATE_FILE" ]; then
+        LAST_SYNC=$(cat "$STATE_FILE")
+    else
+        LAST_SYNC=0
+    fi
+
+    if (( NOW - LAST_SYNC >= SYNC_INTERVAL )); then
+        # The '+%Y-%m-%d %H:%M:%S' format makes the log easy to sort/read
+        echo "--- Sync Started: $(date '+%Y-%m-%d %H:%M:%S') ---"
+
+        if  vdirsyncer --verbosity ERROR sync; then
+            echo "$NOW" > "$STATE_FILE"
+            echo "Result: Success"
+        else
+            echo "Result: FAILED (Check Google  status or network)"
+        fi
+
+        echo "--- Sync Finished: $(date '+%Y-%m-%d %H:%M:%S') ---"
+        echo "" # Visual break
+    fi
+
+    sleep 300
+done >> /home/simon/bin/calendar_sync.log 2>&1
