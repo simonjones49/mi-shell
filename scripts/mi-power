@@ -1,52 +1,56 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-TARGET_PROCESSES=("cmus" "zenity" "wine" "wineserver" "andi2pc.py" "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "upload_videos_fixed.sh" "usb_backup.sh" "avidemux")
+TARGET_PROCESSES=("cmus" "zenity" "wine" "wineserver" "andi2pc.py"
+    "autobikecopy.sh" "bbc.sh" "cloud_backup.sh"
+    "upload_videos_fixed.sh" "usb_backup.sh" "avidemux"
+    "caffeine-flag.sh") # Added your ghost script
 CHECK_INTERVAL=30
 # ---------------------
 
-WAS_INHIBITED=false
-INHIBITOR_PID=""
-
 send_notification() {
-    # $1: Message, $2: Icon Name
     notify-send "Mi-shell Power" "$1" -i "$2" -t 3000
 }
-
-cleanup() {
-    if [ -n "$INHIBITOR_PID" ]; then
-        kill "$INHIBITOR_PID" 2>/dev/null
-    fi
-    exit
-}
-trap cleanup SIGINT SIGTERM
 
 while true; do
     MATCH_FOUND=false
 
+    # Check for any active target processes
     for PROC in "${TARGET_PROCESSES[@]}"; do
-        if pgrep -f "$PROC" > /dev/null; then
+        if pgrep -f "$PROC" | grep -v "$$" > /dev/null; then
             MATCH_FOUND=true
             break
         fi
     done
 
-    if [[ "$MATCH_FOUND" == true ]] && [[ "$WAS_INHIBITED" == false ]]; then
-        # Launch inhibitor (make sure wayland-idle-inhibitor.py is in your PATH)
-        wayland-idle-inhibitor.py &
-        INHIBITOR_PID=$!
-        # Use the Quickshell icon or the 'unlocked' icon
-        send_notification "Keep Awake: ENABLED" "keepassxc-unlocked"
-        WAS_INHIBITED=true
+    if [[ "$MATCH_FOUND" == true ]]; then
+        # If target is running, swayidle MUST be dead
+        if pgrep -x "swayidle" > /dev/null; then
+            pkill -9 swayidle
+            # Kill any existing systemd-inhibit blocks to avoid duplicates
+            pkill -f "systemd-inhibit.*Mi-shell"
+            systemd-inhibit --what=idle:sleep --who="Mi-shell" --why="Target process running" sleep infinity &
 
-    elif [[ "$MATCH_FOUND" == false ]] && [[ "$WAS_INHIBITED" == true ]]; then
-        if [ -n "$INHIBITOR_PID" ]; then
-            kill "$INHIBITOR_PID"
-            INHIBITOR_PID=""
+            send_notification "Keep Awake: ENABLED" "keepassxc-unlocked"
         fi
-        # Use the 'locked' icon to show system is back to normal
-        send_notification "Keep Awake: DISABLED" "keepassxc-locked"
-        WAS_INHIBITED=false
+
+    else
+        # If no target is running, swayidle MUST be alive
+        if ! pgrep -x "swayidle" > /dev/null; then
+            # Clean up the systemd-inhibit block
+            pkill -f "systemd-inhibit.*Mi-shell"
+
+            # Restart swayidle using your config
+            # (Best practice: call your run-swayidle.sh script here)
+            swayidle -w \
+                timeout 300 'niri msg action power-off-monitors' \
+                timeout 360 'swaylock -f -c 000000' \
+                timeout 900 'systemctl suspend' \
+                resume 'niri msg action power-on-monitors' \
+                before-sleep 'swaylock -f -c 000000' &
+
+            send_notification "Keep Awake: DISABLED" "keepassxc-locked"
+        fi
     fi
 
     sleep "$CHECK_INTERVAL"

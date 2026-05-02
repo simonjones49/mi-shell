@@ -3,7 +3,6 @@ post_install() {
   echo "1. Add these to your niri config (~/.config/niri/config.kdl):"
   echo '   spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"'
   echo '   spawn-at-startup "swww-daemon"'
-  echo '   spawn-at-startup "mi-idle"'
   echo '   spawn-at-startup "mi-sync"'
   echo '   spawn-at-startup "mi-power"'
   echo '   spawn-at-startup "mi-shell"'

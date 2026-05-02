@@ -47,7 +47,6 @@ These will be installed automatically if you use the `PKGBUILD`:
 ### Optional
 Install these for full functionality:
 * **vdirsyncer**: For Google/CalDAV calendar synchronization.
-* **wayland-idle-inhibitor-git**: Required for the `mi-power` auto-sleep prevention.
 * **dolphin**: Recommended file manager.
 * **kate**: Recommended text editor.
 * **floorp**: Recommended browser.
@@ -71,7 +70,6 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "swww-daemon"
 
 # Mi-shell components
-spawn-at-startup "mi-idle"
 spawn-at-startup "mi-sync"
 spawn-at-startup "mi-power"
 spawn-at-startup "mi-shell"

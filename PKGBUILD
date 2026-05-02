@@ -34,7 +34,6 @@ optdepends=(
   'kate: Recommended text editor'
   'floorp: Recommended web browser for bar shortcuts'
   'mpv: Recommended media player'
-  'wayland-idle-inhibitor-git: For the mi-power script'
 )
 makedepends=('git')
 
@@ -61,7 +60,6 @@ EOF
   chmod +x "${pkgdir}/usr/bin/mi-shell"
 
   # 3. Install all three scripts
-  install -m755 "${srcdir}/${pkgname}/scripts/mi-idle" "${pkgdir}/usr/bin/mi-idle"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-sync" "${pkgdir}/usr/bin/mi-sync"
 
