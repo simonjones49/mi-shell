@@ -34,6 +34,7 @@ optdepends=(
   'kate: Recommended text editor'
   'floorp: Recommended web browser for bar shortcuts'
   'mpv: Recommended media player'
+  'wayland-idle-inhibitor-git: For the mi-power script'
 )
 makedepends=('git')
 
@@ -46,11 +47,11 @@ pkgver() {
 }
 
 package() {
-  # 1. Install to /etc/xdg instead of /usr/share
+  # 1. Install to /etc/xdg for system-wide defaults
   install -d "${pkgdir}/etc/xdg/quickshell/mi-shell"
   cp -r "${srcdir}/${pkgname}/"* "${pkgdir}/etc/xdg/quickshell/mi-shell/"
 
-  # 2. Update your 'mi-shell' wrapper to point here too
+  # 2. Create the 'mi-shell' wrapper
   install -d "${pkgdir}/usr/bin"
   cat <<EOF > "${pkgdir}/usr/bin/mi-shell"
 #!/bin/sh
@@ -59,14 +60,13 @@ exec quickshell -c mi-shell "\$@"
 EOF
   chmod +x "${pkgdir}/usr/bin/mi-shell"
 
-  # Install your scripts
+  # 3. Install all three scripts
   install -m755 "${srcdir}/${pkgname}/scripts/mi-idle" "${pkgdir}/usr/bin/mi-idle"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-sync" "${pkgdir}/usr/bin/mi-sync"
-  install -m755 "${srcdir}/${pkgname}/scripts/mi-idle" "${pkgdir}/usr/bin/mi-idle"
 
-
-  # 4. Clean up
+  # 4. Clean up the system-wide folder
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"
+  rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/mi-shell.install"
 }

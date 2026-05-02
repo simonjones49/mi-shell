@@ -39,7 +39,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * **khal** (Calendar backend)
 * **kitty** (Default terminal)
 * **pipewire** (Audio support)
-* **wayland-idle-inhibitor-git** Required for mi-power script'
+* **gnome-polkit** (GUI password support)
 
 
 ### Optional
@@ -50,7 +50,7 @@ Install these for full functionality:
 * **kate**: Recommended text editor.
 * **floorp**: Recommended browser.
 * **mpv**: Recommended video.
-
+* **wayland-idle-inhibitor-git** Required for mi-power script'
 
 ## Installation
 
@@ -66,6 +66,7 @@ To start the shell and its helper services automatically, add the following line
 ```kdl
 # Authentication agent for password popups
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+spawn-at-startup "swww-daemon"
 
 # Mi-shell components
 spawn-at-startup "mi-idle"
