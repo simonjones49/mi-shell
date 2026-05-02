@@ -26,7 +26,7 @@ depends=(
   'bash'
   'pipewire'
   'kitty'
-  'wayland-idle-inhibitor-git: Required for mi-power script'
+  'wayland-idle-inhibitor-git'
 
 )
 optdepends=(

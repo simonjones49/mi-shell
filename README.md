@@ -39,6 +39,8 @@ These will be installed automatically if you use the `PKGBUILD`:
 * **khal** (Calendar backend)
 * **kitty** (Default terminal)
 * **pipewire** (Audio support)
+* **wayland-idle-inhibitor-git** Required for mi-power script'
+
 
 ### Optional
 Install these for full functionality:
@@ -47,6 +49,7 @@ Install these for full functionality:
 * **dolphin**: Recommended file manager.
 * **kate**: Recommended text editor.
 * **floorp**: Recommended browser.
+* **mpv**: Recommended video.
 
 
 ## Installation
