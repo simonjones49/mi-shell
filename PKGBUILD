@@ -29,14 +29,15 @@ depends=(
 )
 
 optdepends=(
-  'blueman: for the Bluetooth manager UI'
+  'bluetui: for the Bluetooth manager UI'
+  'nmtui: for the Network manager UI'
   'floorp: for the browser shortcuts'
   'playerctl: recommended for better MPRIS control'
   'vdirsyncer: Optional: Only needed if you want to sync your local khal calendar with Google/CalDAV'
   'dolphin: Recommended file manager'
   'kate: Recommended text editor'
   'mpv: Recommended media player'
-  'nerd-fonts-git: fonts used in notifications'
+  'nerd-fonts-git: fonts'
 )
 makedepends=('git')
 
