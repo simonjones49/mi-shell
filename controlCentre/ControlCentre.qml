@@ -46,6 +46,7 @@ PanelWindow {
       }
     }
   }
+
   PanelWindow {
     id: powerPopup
     visible: false
@@ -60,7 +61,7 @@ PanelWindow {
       anchors.fill: parent
       onClicked: powerPopup.visible = false
       onVisibleChanged: { if (visible) powerBox.forceActiveFocus(); }
-      Rectangle { anchors.fill: parent; color: "#AA000000" } // Dimmed background
+      Rectangle { anchors.fill: parent; color: "#AA000000" }
     }
 
     Rectangle {
@@ -84,7 +85,7 @@ PanelWindow {
             Column {
               anchors.centerIn: parent; spacing: 8
               Text { text: modelData.i; color: modelData.c; font.family: "Hack Nerd Font"; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: modelData.t; color: controlCentre.theme.accentPrimary;  font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: modelData.t; color: controlCentre.theme.accentPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
             }
             MouseArea {
               id: pwrMouse; anchors.fill: parent; hoverEnabled: true
@@ -101,7 +102,7 @@ PanelWindow {
       Keys.onEscapePressed: powerPopup.visible = false
     }
   }
-  // Dismiss layer
+
   MouseArea {
     anchors.fill: parent
     onClicked: controlCentre.visible = false
@@ -115,7 +116,7 @@ PanelWindow {
     anchors.rightMargin: 10
 
     width: 300
-    height: 230 // Adjusted height for two rows
+    height: 420 // Increased height for the connection rows + media
     color: controlCentre.theme.bgBase
     radius: 12
     border.color: controlCentre.theme.bgBorder
@@ -136,255 +137,154 @@ PanelWindow {
         color: controlCentre.theme.textPrimary
       }
 
-      // Row 1: Connections
+      // Connection Rows...
       RowLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
-        spacing: 15 // Slightly wider spacing looks better when centered
-
-        // Wi-Fi
+        spacing: 15
         Rectangle {
           id: wifiBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wifiMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary;   }
-          MouseArea {
-            id: wifiMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["kitty", "--class", "networkmanager", "-e", "nmtui"];
-              p.running = true;
-              controlCentre.visible = false;
-            }
-          }
+          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
+          MouseArea { id: wifiMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["kitty", "--class", "networkmanager", "-e", "nmtui"]; p.running = true; controlCentre.visible = false; } }
         }
-        // VPN
         Rectangle {
           id: vpnBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: vpnMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea {
-            id: vpnMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["gtk-launch" , "VPN\ Switch.desktop"];
-              p.running = true;
-              controlCentre.visible = false;
-            }
-          }
+          MouseArea { id: vpnMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["gtk-launch" , "VPN\ Switch.desktop"]; p.running = true; controlCentre.visible = false; } }
         }
-        // Bluetooth
         Rectangle {
           id: btBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: btMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰂯"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea {
-            id: btMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["kitty", "--class", "bluetooth", "-e", "bluetui"];              p.running = true;
-              controlCentre.visible = false;
-            }
-          }
+          MouseArea { id: btMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["kitty", "--class", "bluetooth", "-e", "bluetui"]; p.running = true; controlCentre.visible = false; } }
         }
-
-
       }
 
-      // Row 2: Appearance
       RowLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
-        spacing: 15 // Slightly wider spacing looks better when centered
-
-        // Wallpaper
+        spacing: 15
         Rectangle {
           id: wallBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wallMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰸉"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea {
-            id: wallMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "wallpaper", "toggle"];
-              p.running = true;
-              controlCentre.visible = false;
-            }
-          }
+          MouseArea { id: wallMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "wallpaper", "toggle"]; p.running = true; controlCentre.visible = false; } }
         }
-
-        // Theme
         Rectangle {
           id: themeBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: themeMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰏘"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea {
-            id: themeMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "theme", "toggle"];
-              p.running = true;
-              controlCentre.visible = false;
-            }
-          }        }
-
+          MouseArea { id: themeMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "theme", "toggle"]; p.running = true; controlCentre.visible = false; } }
+        }
       }
-      // Row 3: Session
+
       RowLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
-        spacing: 15 // Slightly wider spacing looks better when centered
-
         Rectangle {
           id: openPowerBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: pwrTriggerMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-
-          Text {
-            anchors.centerIn: parent
-            text: "󰐥"
-            font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary;
-          }
-
-          MouseArea {
-            id: pwrTriggerMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              controlCentre.visible = false; // Close the menu
-              // Trigger the external popup - we'll use its ID directly
-              powerPopup.visible = true;
-            }
-          }
+          Text { anchors.centerIn: parent; text: "󰐥"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
+          MouseArea { id: pwrTriggerMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { controlCentre.visible = false; powerPopup.visible = true; } }
         }
       }
 
       // --- MEDIA PLAYER ---
       Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 180
+        Layout.preferredHeight: 140
         Layout.topMargin: 10
         radius: 10
         color: controlCentre.theme.bgSurface
         clip: true
 
-        RowLayout {
+        ColumnLayout {
           anchors.fill: parent
           anchors.margins: 15
-          spacing: 15
+          spacing: 5
+
+          Text {
+            text: {
+              if (!player) return "No Media";
+              let title = player.metadata["xesam:title"];
+              if (title && title.toString().trim().length > 0) return title;
+              let url = player.metadata["xesam:url"];
+              if (url) {
+                let filename = url.toString().split('/').pop();
+                return decodeURIComponent(filename).replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
+              }
+              return player.identity || "Unknown Source";
+            }
+            color: controlCentre.theme.textPrimary
+            font.bold: true
+            font.pixelSize: 16
+            Layout.fillWidth: true
+            elide: Text.ElideNone
+            clip: true
+          }
+
+          Text {
+            text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
+            color: controlCentre.theme.textPrimary
+            font.pixelSize: 13
+            Layout.fillWidth: true
+            elide: Text.ElideNone
+            clip: true
+          }
 
           Rectangle {
-            Layout.preferredWidth: 120; Layout.preferredHeight: 120; radius: 8
-            color: controlCentre.theme.bgBase
-            Image {
-              anchors.fill: parent
-              source: controlCentre.player ? controlCentre.player.trackArtUrl : ""
-              fillMode: Image.PreserveAspectCrop
-              visible: status === Image.Ready
+            id: progressBackground
+            Layout.fillWidth: true; Layout.preferredHeight: 4; Layout.topMargin: 5
+            color: controlCentre.theme.bgBase; radius: 2
+            Rectangle {
+              id: progressFill
+              // inside progressFill
+              width: (controlCentre.player && controlCentre.player.length > 0)
+              ? (controlCentre.player.position / controlCentre.player.length) * progressBackground.width
+              : 0
+              height: parent.height; color: controlCentre.theme.accentPrimary; radius: 2
+              Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.Linear } }
             }
-            Text {
-              anchors.centerIn: parent; text: "󰎆"; font.family: "Hack Nerd Font"
-              font.pixelSize: 40; color: controlCentre.theme.textMuted
-              visible: !controlCentre.player || controlCentre.player.trackArtUrl === ""
+            MouseArea {
+              anchors.fill: parent
+              onClicked: (mouse) => {
+                if (controlCentre.player && controlCentre.player.length > 0) {
+                  const ratio = mouse.x / width;
+                  controlCentre.player.position = ratio * controlCentre.player.length;
+                }
+              }
             }
           }
 
-          ColumnLayout {
-            Layout.fillWidth: true; spacing: 2
-
+          RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10; spacing: 30
             Text {
-              text: {
-                if (!player) return "No Media";
-
-                // 1. Try the standard title
-                let title = player.metadata["xesam:title"];
-                if (title && title.toString().trim().length > 0) return title;
-
-                // 2. Fallback to URL (Extract filename)
-                let url = player.metadata["xesam:url"];
-                if (url) {
-                  let urlString = url.toString();
-                  let filename = urlString.split('/').pop(); // Get everything after the last slash
-
-                  // Clean up URL encoding (e.g., %20 to spaces) and remove common YouTube suffixes
-                  return decodeURIComponent(filename)
-                  .replace(/_/g, ' ')
-                  .replace(/\.[^/.]+$/, ""); // Remove file extension
-                }
-
-                // 3. Last resort
-                return player.identity || "Unknown Source";
-              }
-              color: controlCentre.theme.textPrimary;
-              Layout.fillWidth: true
-              elide: Text.ElideNone
-              clip: true
-              horizontalAlignment: Text.AlignLeft
+              text: "󰒮"; font.family: "Hack Nerd Font"; font.pixelSize: 18
+              color: (controlCentre.player && controlCentre.player.canGoPrevious) ? "white" : "#555555"
+              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoPrevious) controlCentre.player.previous() }
             }
-
-            Text {
-              text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
-              color: controlCentre.theme.textPrimary
-              font.pixelSize: 12
-
-              // Ensure this matches the title constraint
-              Layout.fillWidth: true
-              elide: Text.ElideNone
-              clip: true
-            }
-
             Rectangle {
-              id: progressBackground
-              Layout.fillWidth: true; Layout.preferredHeight: 4; Layout.topMargin: 10
-              color: controlCentre.theme.bgBase; radius: 2
-
-              Rectangle {
-                id: progressFill
-                width: 0
-                height: parent.height; color: controlCentre.theme.accentPrimary; radius: 2
-                Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.Linear } }
-              }
-
-              MouseArea {
-                anchors.fill: parent
-                onClicked: (mouse) => {
-                  if (controlCentre.player && controlCentre.player.length > 0) {
-                    const ratio = mouse.x / width;
-                    controlCentre.player.position = ratio * controlCentre.player.length;
-                    progressFill.width = width * ratio;
-                  }
-                }
-              }
-            }
-
-            RowLayout {
-              Layout.alignment: Qt.AlignHCenter
-              Layout.topMargin: 10; spacing: 15
-
+              width: 36; height: 36; radius: 18; color: controlCentre.theme.accentPrimary
               Text {
-                text: "󰒮"; font.family: "Hack Nerd Font"; font.pixelSize: 18
-                color: (controlCentre.player && controlCentre.player.canGoPrevious) ? "white" : "#555555"
-                MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoPrevious) controlCentre.player.previous() }
+                anchors.centerIn: parent; text: controlCentre.player && controlCentre.player.isPlaying ? "󰏤" : "󰐊"
+                color: controlCentre.theme.bgBase; font.family: "Hack Nerd Font"
               }
-
-              Rectangle {
-                width: 36; height: 36; radius: 18; color: controlCentre.theme.accentPrimary
-                Text {
-                  anchors.centerIn: parent; text: controlCentre.player && controlCentre.player.isPlaying ? "󰏤" : "󰐊"
-                  color: controlCentre.theme.bgBase; font.family: "Hack Nerd Font"
-                }
-                MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player) controlCentre.player.togglePlaying() }
-              }
-
-              Text {
-                text: "󰒭"; font.family: "Hack Nerd Font"; font.pixelSize: 18
-                color: (controlCentre.player && controlCentre.player.canGoNext) ? "white" : "#555555"
-                MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoNext) controlCentre.player.next() }
-              }
+              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player) controlCentre.player.togglePlaying() }
             }
-
+            Text {
+              text: "󰒭"; font.family: "Hack Nerd Font"; font.pixelSize: 18
+              color: (controlCentre.player && controlCentre.player.canGoNext) ? "white" : "#555555"
+              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoNext) controlCentre.player.next() }
+            }
           }
         }
       }
