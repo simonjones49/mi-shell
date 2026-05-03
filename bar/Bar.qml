@@ -219,7 +219,7 @@ Scope {
 
             Text {
               text: Qt.formatDateTime(calendarPopup.currentDate, "MMMM yyyy").toUpperCase();
-              color: root.theme.accentPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
+              color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
             }
 
             // The Grid is now wrapped in an Item with a fixed height to prevent shifting
@@ -238,7 +238,7 @@ Scope {
                 // Header Row
                 Repeater {
                   model: ["M", "T", "W", "T", "F", "S", "S"]
-                  Text { text: modelData; color: root.theme.textMuted; font.pixelSize: 12; Layout.alignment: Qt.AlignHCenter }
+                  Text { text: modelData; color: root.theme.accentPrimary; font.pixelSize: 14; Layout.alignment: Qt.AlignHCenter }
                 }
 
                 // Empty space for start of month
@@ -286,7 +286,7 @@ Scope {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "Upcoming events"
                 color: root.theme.accentPrimary
-                font.bold: true
+                //font.bold: true
                 font.pixelSize: 16
               }
 
