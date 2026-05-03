@@ -8,7 +8,7 @@ import Quickshell.Services.Mpris
 
 PanelWindow {
   id: controlCentre
-  property var theme: Theme
+  property var theme: DefaultTheme {}
 
   visible: false
   color: "transparent"
@@ -84,7 +84,7 @@ PanelWindow {
             Column {
               anchors.centerIn: parent; spacing: 8
               Text { text: modelData.i; color: modelData.c; font.family: "Hack Nerd Font"; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
-              Text { text: modelData.t; color: "#FFFFFF"; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: modelData.t; color: controlCentre.theme.accentPrimary;  font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
             }
             MouseArea {
               id: pwrMouse; anchors.fill: parent; hoverEnabled: true
@@ -133,7 +133,7 @@ PanelWindow {
         font.family: "Hack Nerd Font"
         font.pixelSize: 14
         font.bold: true
-        color: controlCentre.theme.accentPrimary
+        color: controlCentre.theme.textPrimary
       }
 
       // Row 1: Connections
@@ -147,7 +147,7 @@ PanelWindow {
           id: wifiBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wifiMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary;   }
           MouseArea {
             id: wifiMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -163,7 +163,7 @@ PanelWindow {
           id: vpnBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: vpnMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
           MouseArea {
             id: vpnMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -179,7 +179,7 @@ PanelWindow {
           id: btBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: btMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰂯"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰂯"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
           MouseArea {
             id: btMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -204,7 +204,7 @@ PanelWindow {
           id: wallBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wallMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰸉"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰸉"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
           MouseArea {
             id: wallMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -221,7 +221,7 @@ PanelWindow {
           id: themeBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: themeMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰏘"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰏘"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
           MouseArea {
             id: themeMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -247,7 +247,7 @@ PanelWindow {
           Text {
             anchors.centerIn: parent
             text: "󰐥"
-            font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF"
+            font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary;
           }
 
           MouseArea {
@@ -295,14 +295,34 @@ PanelWindow {
             Layout.fillWidth: true; spacing: 2
 
             Text {
-              text: controlCentre.player ? controlCentre.player.trackTitle : "No Media"
-              color: "white"; font.bold: true; font.pixelSize: 14
-              elide: Text.ElideRight; Layout.fillWidth: true
+              text: {
+                if (!player) return "No Media";
+
+                // 1. Try the standard title
+                let title = player.metadata["xesam:title"];
+                if (title && title.toString().trim().length > 0) return title;
+
+                // 2. Fallback to URL (Extract filename)
+                let url = player.metadata["xesam:url"];
+                if (url) {
+                  let urlString = url.toString();
+                  let filename = urlString.split('/').pop(); // Get everything after the last slash
+
+                  // Clean up URL encoding (e.g., %20 to spaces) and remove common YouTube suffixes
+                  return decodeURIComponent(filename)
+                  .replace(/_/g, ' ')
+                  .replace(/\.[^/.]+$/, ""); // Remove file extension
+                }
+
+                // 3. Last resort
+                return player.identity || "Unknown Source";
+              }
+              color: controlCentre.theme.textPrimary;
             }
 
             Text {
               text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
-              color: "#aaaaaa"; font.pixelSize: 12
+               color: controlCentre.theme.textPrimary;  font.pixelSize: 12
               elide: Text.ElideRight; Layout.fillWidth: true
             }
 
