@@ -318,12 +318,21 @@ PanelWindow {
                 return player.identity || "Unknown Source";
               }
               color: controlCentre.theme.textPrimary;
+              Layout.fillWidth: true
+              elide: Text.ElideNone
+              clip: true
+              horizontalAlignment: Text.AlignLeft
             }
 
             Text {
               text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
-               color: controlCentre.theme.textPrimary;  font.pixelSize: 12
-              elide: Text.ElideRight; Layout.fillWidth: true
+              color: controlCentre.theme.textPrimary
+              font.pixelSize: 12
+
+              // Ensure this matches the title constraint
+              Layout.fillWidth: true
+              elide: Text.ElideNone
+              clip: true
             }
 
             Rectangle {
@@ -375,6 +384,7 @@ PanelWindow {
                 MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoNext) controlCentre.player.next() }
               }
             }
+
           }
         }
       }
