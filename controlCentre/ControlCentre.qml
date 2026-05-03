@@ -23,7 +23,61 @@ PanelWindow {
       controlCentre.visible = !controlCentre.visible;
     }
   }
+  PanelWindow {
+    id: powerPopup
+    visible: false
+    focusable: true
+    color: "transparent"
 
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    anchors { top: true; bottom: true; left: true; right: true }
+
+    MouseArea {
+      anchors.fill: parent
+      onClicked: powerPopup.visible = false
+      onVisibleChanged: { if (visible) powerBox.forceActiveFocus(); }
+      Rectangle { anchors.fill: parent; color: "#AA000000" } // Dimmed background
+    }
+
+    Rectangle {
+      id: powerBox
+      focus: true
+      anchors.centerIn: parent
+      width: 420; height: 120; radius: 12
+      color: controlCentre.theme.bgBase; border.width: 2; border.color: controlCentre.theme.bgSurface
+
+      Row {
+        anchors.centerIn: parent; spacing: 25
+        Repeater {
+          model: [
+            { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit","--skip-confirmation"] },
+            { t: "Reboot", i: "󰑓", c: "#00aa7f", cmd: ["systemctl", "reboot"] },
+            { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
+          ]
+          Rectangle {
+            width: 110; height: 90; radius: 10
+            color: pwrMouse.containsMouse ? controlCentre.theme.bgSurface : "transparent"
+            Column {
+              anchors.centerIn: parent; spacing: 8
+              Text { text: modelData.i; color: modelData.c; font.family: "Hack Nerd Font"; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: modelData.t; color: "#FFFFFF"; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
+            }
+            MouseArea {
+              id: pwrMouse; anchors.fill: parent; hoverEnabled: true
+              onClicked: {
+                powerPopup.visible = false
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
+                p.command = modelData.cmd;
+                p.running = true;
+              }
+            }
+          }
+        }
+      }
+      Keys.onEscapePressed: powerPopup.visible = false
+    }
+  }
   // Dismiss layer
   MouseArea {
     anchors.fill: parent
@@ -38,7 +92,7 @@ PanelWindow {
     anchors.rightMargin: 10
 
     width: 300
-    height: 200 // Adjusted height for two rows
+    height: 230 // Adjusted height for two rows
     color: controlCentre.theme.bgBase
     radius: 12
     border.color: controlCentre.theme.bgBorder
@@ -62,7 +116,8 @@ PanelWindow {
       // Row 1: Connections
       RowLayout {
         Layout.fillWidth: true
-        spacing: 10
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 15 // Slightly wider spacing looks better when centered
 
         // Wi-Fi
         Rectangle {
@@ -91,8 +146,7 @@ PanelWindow {
             id: btMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["blueman-manager"];
-              p.running = true;
+              p.command = ["kitty", "--class", "bluetui-float", "-e", "bluetui"];              p.running = true;
               controlCentre.visible = false;
             }
           }
@@ -119,7 +173,8 @@ PanelWindow {
       // Row 2: Appearance
       RowLayout {
         Layout.fillWidth: true
-        spacing: 10
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 15 // Slightly wider spacing looks better when centered
 
         // Wallpaper
         Rectangle {
@@ -151,6 +206,33 @@ PanelWindow {
               p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "theme", "toggle"];
               p.running = true;
               controlCentre.visible = false;
+            }
+          }
+        }
+      }
+      // Row 3: Session
+      RowLayout {
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 15 // Slightly wider spacing looks better when centered
+
+        Rectangle {
+          id: openPowerBtn
+          Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
+          color: pwrTriggerMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
+
+          Text {
+            anchors.centerIn: parent
+            text: "󰐥"
+            font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF"
+          }
+
+          MouseArea {
+            id: pwrTriggerMouse; anchors.fill: parent; hoverEnabled: true
+            onClicked: {
+              controlCentre.visible = false; // Close the menu
+              // Trigger the external popup - we'll use its ID directly
+              powerPopup.visible = true;
             }
           }
         }

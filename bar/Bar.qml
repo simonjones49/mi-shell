@@ -545,11 +545,11 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
           }
 
-          Rectangle {
-            width: 34; height: 20; radius: 10; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
-            Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
-            MouseArea { anchors.fill: parent; onClicked: powerPopup.visible = !powerPopup.visible }
-          }
+          // Rectangle {
+          //   width: 34; height: 20; radius: 10; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
+          //   Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
+          //   MouseArea { anchors.fill: parent; onClicked: powerPopup.visible = !powerPopup.visible }
+          // }
         }
       }
     }
