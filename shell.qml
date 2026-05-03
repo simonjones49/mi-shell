@@ -12,7 +12,6 @@ import "launcher"      // Renamed
 import "notifications"
 import "themeSwitcher" // Renamed
 import "wallpaper"
-import "media"
 import "osd"
 import "controlCentre"
 
@@ -23,7 +22,6 @@ Scope {
   AppLauncher { theme: ts.theme }
   NotificationPopup { theme: ts.theme }
   WallpaperManager { theme: ts.theme }
-  MediaControl { theme: ts.theme }
   OSD { theme: ts.theme }
   ControlCentre {
     id: controlCentre
