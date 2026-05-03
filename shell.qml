@@ -14,6 +14,8 @@ import "themeSwitcher" // Renamed
 import "wallpaper"
 import "media"
 import "osd"
+import "controlCentre"
+
 Scope {
 
   ThemeSwitcher { id: ts }
@@ -23,4 +25,8 @@ Scope {
   WallpaperManager { theme: ts.theme }
   MediaControl { theme: ts.theme }
   OSD { theme: ts.theme }
+  ControlCentre {
+    id: controlCentre
+    theme: ts.theme
+  }
 }

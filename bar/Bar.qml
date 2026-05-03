@@ -59,7 +59,6 @@ Scope {
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
 
-  // --- HELPER FUNCTIONS ---
   function resolveIcon(appId) {
     if (!appId) return "application-x-executable";
     let id = appId.toLowerCase();
@@ -81,7 +80,6 @@ Scope {
     return id;
   }
 
-  // --- DATA FETCHING ---
   Process {
     id: niriProc
     command: ["sh", "-c", "niri msg -j workspaces && echo '---SEP---' && niri msg -j windows"]
@@ -126,7 +124,7 @@ Scope {
           root.sysDetails = "Distro: " + lines[0] + "\n" +
           "Kernel: " + lines[1] + "\n" +
           "Uptime: " + lines[2] + "\n" +
-          "RAM   : " + lines[3] + "\n" +
+          "RAM    : " + lines[3] + "\n" +
           "Disk /: " + lines[4]  + "\n" +
           "Home  : " + lines[5];
         }
@@ -151,7 +149,6 @@ Scope {
     onTriggered: if (!niriProc.running) niriProc.running = true
   }
 
-  // --- WINDOW RENDER ---
   Variants {
     model: Quickshell.screens
 
@@ -168,7 +165,7 @@ Scope {
         id: cpuPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 750
+        anchor.rect.y: mainBar.height - 710
         implicitWidth: 280
         implicitHeight: 180
         visible: false
@@ -191,16 +188,24 @@ Scope {
         id: calendarPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 560
+        anchor.rect.y: mainBar.height - 525 // Adjusted for the extra row
         implicitWidth: 280
-        implicitHeight: 555
+        implicitHeight: 520 // Increased to comfortably fit 6 rows + agenda
         visible: false
         color: "transparent"
+
+        property date currentDate: new Date()
+        readonly property int firstDayOffset: {
+          let jsDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+          return jsDay === 0 ? 6 : jsDay - 1;
+        }
+        readonly property int daysInMonth: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
 
         Connections {
           target: calendarPopup
           function onVisibleChanged() {
             if (calendarPopup.visible) {
+              calendarPopup.currentDate = new Date();
               agendaProc.running = false;
               agendaProc.running = true;
             }
@@ -210,74 +215,110 @@ Scope {
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
           Column {
-            anchors.fill: parent; anchors.margins: 12; spacing: 12
+            anchors.fill: parent; anchors.margins: 15; spacing: 15
 
             Text {
-              text: Qt.formatDateTime(new Date(), "MMMM yyyy");
+              text: Qt.formatDateTime(calendarPopup.currentDate, "MMMM yyyy").toUpperCase();
               color: root.theme.accentPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            // --- PURE QML CALENDAR GRID ---
-            GridLayout {
-              columns: 7
-              rowSpacing: 8
-              columnSpacing: 8
+            // The Grid is now wrapped in an Item with a fixed height to prevent shifting
+            Item {
+              width: parent.width
+              height: 240 // Fixed height to accommodate 7 total rows (Header + 6 weeks)
               anchors.horizontalCenter: parent.horizontalCenter
 
-              Repeater {
-                model: ["M", "T", "W", "T", "F", "S", "S"]
-                Text {
-                  text: modelData
-                  color: root.theme.textMuted
-                  font.pixelSize: 12
-                  Layout.alignment: Qt.AlignHCenter
+              GridLayout {
+                id: calendarGrid
+                anchors.fill: parent
+                columns: 7
+                rowSpacing: 10
+                columnSpacing: 8
+
+                // Header Row
+                Repeater {
+                  model: ["M", "T", "W", "T", "F", "S", "S"]
+                  Text { text: modelData; color: root.theme.textMuted; font.pixelSize: 12; Layout.alignment: Qt.AlignHCenter }
+                }
+
+                // Empty space for start of month
+                Repeater {
+                  model: calendarPopup.firstDayOffset
+                  Item { implicitWidth: 30; implicitHeight: 30 }
+                }
+
+                // The Days
+                Repeater {
+                  model: calendarPopup.daysInMonth
+                  delegate: Rectangle {
+                    implicitWidth: 30; implicitHeight: 30
+                    radius: 4
+                    readonly property int dayNum: index + 1
+                    readonly property bool isToday: dayNum === new Date().getDate() &&
+                    new Date().getMonth() === calendarPopup.currentDate.getMonth() &&
+                    new Date().getFullYear() === calendarPopup.currentDate.getFullYear()
+                    color: isToday ? root.theme.accentPrimary : "transparent"
+                    Text {
+                      anchors.centerIn: parent
+                      text: dayNum
+                      color: isToday ? root.theme.bgBase : root.theme.textPrimary
+                      font.bold: isToday
+                    }
+                  }
+                }
+
+                // Filler to maintain 42 cells (6 weeks) if month is short
+                Repeater {
+                  model: 42 - (calendarPopup.firstDayOffset + calendarPopup.daysInMonth)
+                  Item { implicitWidth: 30; implicitHeight: 30 }
                 }
               }
+            }
 
-              Repeater {
-                model: 42
-                delegate: Rectangle {
-                  implicitWidth: 30
-                  implicitHeight: 30
-                  radius: 4
+            Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
 
-                  readonly property var now: new Date()
-                  readonly property var firstDay: new Date(now.getFullYear(), now.getMonth(), 1)
-                  readonly property int offset: firstDay.getDay()
-                  readonly property int dayNumber: index - offset + 1
-                  readonly property bool isCurrentMonth: dayNumber > 0 && dayNumber <= new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
-                  readonly property bool isToday: isCurrentMonth && dayNumber === now.getDate()
+            Item {
+              width: parent.width
+              height: 24
 
-                  color: isToday ? root.theme.accentPrimary : "transparent"
+              Text {
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                text: "Upcoming events"
+                color: root.theme.accentPrimary
+                font.bold: true
+                font.pixelSize: 16
+              }
 
-                  Text {
-                    anchors.centerIn: parent
-                    text: isCurrentMonth ? dayNumber : ""
-                    color: isToday ? root.theme.bgBase : (isCurrentMonth ? root.theme.textPrimary : "transparent")
-                    font.bold: isToday
+              Text {
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: "󰃭"
+                color: root.theme.accentPrimary
+                font.pixelSize: 22
+
+                MouseArea {
+                  anchors.fill: parent
+                  cursorShape: Qt.PointingHandCursor
+                  onClicked: {
+                    let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                    p.command = ["kitty", "--class" , "calendar", "-e", "ikhal"];
+                    p.running = true;
+                    calendarPopup.visible = false;
                   }
                 }
               }
             }
-            // --- END CALENDAR GRID ---
 
-            Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
-            Text { text: "Upcoming events"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 16 }
             ScrollView {
-              width: parent.width; height: 160; clip: true
-              Text { width: 250; text: root.agendaDetails; color: root.theme.textPrimary; font.pixelSize: 13; font.family: "Monospace"; wrapMode: Text.Wrap }
-            }
-            Rectangle {
-              width: parent.width; height: 32; color: root.theme.bgSurface; radius: 6
-              Text { text: "Open iKhal"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 11; anchors.centerIn: parent }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = ["kitty", "--class" , "calendar", "-e", "ikhal"];
-                  p.running = true;
-                  calendarPopup.visible = false;
-                }
+              width: parent.width; height: 140; clip: true
+              Text {
+                width: parent.width
+                text: root.agendaDetails
+                color: root.theme.textPrimary
+                font.pixelSize: 13
+                font.family: "Monospace"
+                wrapMode: Text.Wrap
               }
             }
           }
@@ -351,7 +392,7 @@ Scope {
             anchors.fill: parent
             onClicked: {
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-              p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "launcher", "toggle"];
+              p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "controlcentre", "toggle"];
               p.running = true;
             }
           }
@@ -455,7 +496,7 @@ Scope {
                 anchors.fill: parent
                 onWheel: (wheel) => {
                   let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = wheel.angleDelta.y > 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
+                  p.command = wheel.angleDelta.y < 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
                   p.running = true;
                 }
               }
@@ -479,12 +520,19 @@ Scope {
             Repeater {
               model: SystemTray.items
               IconImage {
-                source: modelData.icon; implicitSize: 20
+                source: modelData.icon !== "" ? modelData.icon : "network-wireless"
+                implicitSize: 20
                 MouseArea {
                   anchors.fill: parent; acceptedButtons: Qt.LeftButton | Qt.RightButton
                   onClicked: (mouse) => {
-                    if (mouse.button === Qt.RightButton) modelData.secondaryActivate();
-                    else modelData.activate();
+                    if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
+                      let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                      p.command = ["kitty", "--class", "nmtui-terminal", "-e", "nmtui"];
+                      p.running = true;
+                    } else {
+                      if (mouse.button === Qt.RightButton) modelData.secondaryActivate();
+                      else modelData.activate();
+                    }
                   }
                 }
               }
