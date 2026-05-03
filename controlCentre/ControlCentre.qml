@@ -124,7 +124,7 @@ PanelWindow {
           id: wifiBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wifiMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
+          Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; root.theme.accentPrimary }
           MouseArea {
             id: wifiMouse; anchors.fill: parent; hoverEnabled: true
             onClicked: {
@@ -135,7 +135,22 @@ PanelWindow {
             }
           }
         }
-
+        // VPN
+        Rectangle {
+          id: vpnBtn
+          Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
+          color: vpnMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
+          Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; root.theme.accentPrimary }
+          MouseArea {
+            id: vpnMouse; anchors.fill: parent; hoverEnabled: true
+            onClicked: {
+              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
+              p.command = ["sh", "-c", "python3 $HOME/bin/combined_vpn_wg_switcher.py"];
+              p.running = true;
+              controlCentre.visible = false;
+            }
+          }
+        }
         // Bluetooth
         Rectangle {
           id: btBtn
@@ -152,22 +167,7 @@ PanelWindow {
           }
         }
 
-        // VPN
-        Rectangle {
-          id: vpnBtn
-          Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
-          color: vpnMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
-          Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: "#FFFFFF" }
-          MouseArea {
-            id: vpnMouse; anchors.fill: parent; hoverEnabled: true
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre);
-              p.command = ["sh", "-c", "python3 $HOME/bin/combined_vpn_wg_switcher.py"];
-              p.running = true;
-              controlCentre.visible = false;
-            }
-          }
-        }
+
       }
 
       // Row 2: Appearance
