@@ -21,17 +21,43 @@ Scope {
   property string agendaDetails: "No upcoming events."
   property bool numLockActive: false
   property bool capsLockActive: false
+  property string batteryLevel: "..."
+  property int batteryTick: 0
+  property date currentDate: new Date()
 
   // --- TIMERS & PROCESSES ---
+
+  // Midnight Watcher: Ensures the currentDate property updates when the day rolls over
+  Timer {
+    interval: 60000
+    running: true
+    repeat: true
+    onTriggered: {
+      let now = new Date();
+      if (now.getDate() !== currentDate.getDate()) {
+        currentDate = now;
+      }
+    }
+  }
+
+  // Consolidated Timer: High priority for LEDs, Low priority (30s) for Battery
   Timer {
     interval: 500
     running: true
     repeat: true
     onTriggered: {
-      numLockCheck.running = false;
-      numLockCheck.running = true;
-      capsLockCheck.running = false;
-      capsLockCheck.running = true;
+      numLockCheck.running = false; numLockCheck.running = true;
+      capsLockCheck.running = false; capsLockCheck.running = true;
+
+      root.batteryTick++;
+      if (root.batteryTick >= 60) {
+        battProc.running = false;
+        battProc.running = true;
+        root.batteryTick = 0;
+      }
+    }
+    Component.onCompleted: {
+      battProc.running = true; // Run immediately on startup
     }
   }
 
@@ -50,6 +76,17 @@ Scope {
     running: false
     stdout: StdioCollector {
       onStreamFinished: { root.capsLockActive = (text.trim() === "1"); }
+    }
+  }
+
+  Process {
+    id: battProc
+    command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        root.batteryLevel = text.trim() + "%";
+      }
     }
   }
 
@@ -188,24 +225,23 @@ Scope {
         id: calendarPopup
         anchor.window: mainBar
         anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 525 // Adjusted for the extra row
+        anchor.rect.y: mainBar.height - 525
         implicitWidth: 280
-        implicitHeight: 520 // Increased to comfortably fit 6 rows + agenda
+        implicitHeight: 520
         visible: false
         color: "transparent"
 
-        property date currentDate: new Date()
         readonly property int firstDayOffset: {
-          let jsDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+          let jsDay = new Date(root.currentDate.getFullYear(), root.currentDate.getMonth(), 1).getDay();
           return jsDay === 0 ? 6 : jsDay - 1;
         }
-        readonly property int daysInMonth: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
+        readonly property int daysInMonth: new Date(root.currentDate.getFullYear(), root.currentDate.getMonth() + 1, 0).getDate()
 
         Connections {
           target: calendarPopup
           function onVisibleChanged() {
             if (calendarPopup.visible) {
-              calendarPopup.currentDate = new Date();
+              root.currentDate = new Date();
               agendaProc.running = false;
               agendaProc.running = true;
             }
@@ -218,14 +254,13 @@ Scope {
             anchors.fill: parent; anchors.margins: 15; spacing: 15
 
             Text {
-              text: Qt.formatDateTime(calendarPopup.currentDate, "MMMM yyyy").toUpperCase();
+              text: Qt.formatDateTime(root.currentDate, "MMMM yyyy").toUpperCase();
               color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
             }
 
-            // The Grid is now wrapped in an Item with a fixed height to prevent shifting
             Item {
               width: parent.width
-              height: 240 // Fixed height to accommodate 7 total rows (Header + 6 weeks)
+              height: 240
               anchors.horizontalCenter: parent.horizontalCenter
 
               GridLayout {
@@ -235,28 +270,25 @@ Scope {
                 rowSpacing: 10
                 columnSpacing: 8
 
-                // Header Row
                 Repeater {
                   model: ["M", "T", "W", "T", "F", "S", "S"]
                   Text { text: modelData; color: root.theme.accentPrimary; font.pixelSize: 14; Layout.alignment: Qt.AlignHCenter }
                 }
 
-                // Empty space for start of month
                 Repeater {
                   model: calendarPopup.firstDayOffset
                   Item { implicitWidth: 30; implicitHeight: 30 }
                 }
 
-                // The Days
                 Repeater {
                   model: calendarPopup.daysInMonth
                   delegate: Rectangle {
                     implicitWidth: 30; implicitHeight: 30
                     radius: 4
                     readonly property int dayNum: index + 1
-                    readonly property bool isToday: dayNum === new Date().getDate() &&
-                    new Date().getMonth() === calendarPopup.currentDate.getMonth() &&
-                    new Date().getFullYear() === calendarPopup.currentDate.getFullYear()
+                    readonly property bool isToday: dayNum === root.currentDate.getDate() &&
+                    new Date().getMonth() === root.currentDate.getMonth() &&
+                    new Date().getFullYear() === root.currentDate.getFullYear()
                     color: isToday ? root.theme.accentPrimary : "transparent"
                     Text {
                       anchors.centerIn: parent
@@ -267,7 +299,6 @@ Scope {
                   }
                 }
 
-                // Filler to maintain 42 cells (6 weeks) if month is short
                 Repeater {
                   model: 42 - (calendarPopup.firstDayOffset + calendarPopup.daysInMonth)
                   Item { implicitWidth: 30; implicitHeight: 30 }
@@ -286,7 +317,6 @@ Scope {
                 anchors.verticalCenter: parent.verticalCenter
                 text: "Upcoming events"
                 color: root.theme.accentPrimary
-                //font.bold: true
                 font.pixelSize: 16
               }
 
@@ -471,6 +501,17 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: cpuPopup.visible = !cpuPopup.visible }
           }
 
+          // --- BATTERY DISPLAY ---
+          Rectangle {
+            width: 40; height: 26; radius: 8; color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
+            Row {
+              anchors.centerIn: parent; spacing: 2
+              Text { text: "󰁹"; color: root.theme.accentPrimary; font.pixelSize: 14 }
+              Text { text: root.batteryLevel; color: root.theme.textPrimary; font.pixelSize: 11; font.bold: true }
+            }
+          }
+
           Row {
             spacing: 1; anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
@@ -496,7 +537,7 @@ Scope {
                 anchors.fill: parent
                 onWheel: (wheel) => {
                   let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = wheel.angleDelta.y < 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
+                  p.command = wheel.angleDelta.y > 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
                   p.running = true;
                 }
               }
@@ -544,12 +585,6 @@ Scope {
             Text { anchors.centerIn: parent; text: Time.timeString.substring(0, 5); color: root.theme.textPrimary; font.pixelSize: 14; font.bold: true }
             MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
           }
-
-          // Rectangle {
-          //   width: 34; height: 20; radius: 10; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
-          //   Text { anchors.centerIn: parent; text: "⏻"; color: "#fb4934"; font.pixelSize: 18 }
-          //   MouseArea { anchors.fill: parent; onClicked: powerPopup.visible = !powerPopup.visible }
-          // }
         }
       }
     }

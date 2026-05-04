@@ -328,7 +328,7 @@ Scope {
 
                                             if (elapsed >= totalDuration) {
                                                 stop();
-                                                console.log("5 Seconds reached, dismissing.");
+                                               // console.log("5 Seconds reached, dismissing.");
                                                 notifCard.modelData.dismiss();
                                             }
                                         }
