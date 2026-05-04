@@ -342,8 +342,7 @@ Scope {
                   cursorShape: Qt.PointingHandCursor
                   onClicked: {
                     let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                    p.command = ["kitty", "--class" , "calendar", "-e", "ikhal"];
-                    p.running = true;
+p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --class calendar -e ikhal"];                    p.running = true;
                     calendarPopup.visible = false;
                   }
                 }
