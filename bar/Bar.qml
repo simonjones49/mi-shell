@@ -551,7 +551,7 @@ Scope {
             spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
               width: 32; height: 26; radius: 16; color: root.theme.bgSurface
-              Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.textPrimary; font.pixelSize: 22 }
+              Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentPrimary; font.pixelSize: 22 }
               MouseArea {
                 anchors.fill: parent
                 onWheel: (wheel) => {
