@@ -81,11 +81,11 @@ Scope {
 
   Process {
     id: battProc
-    command: ["sh", "-c", "cat /sys/class/power_supply/BAT0/capacity"]
+    command: ["sh", "-c", "upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep 'percentage' | sed -e 's/percentage://' | sed -e 's/ //g'"]
     running: false
     stdout: StdioCollector {
       onStreamFinished: {
-        root.batteryLevel = text.trim() + "%";
+        root.batteryLevel = text.trim();
       }
     }
   }
