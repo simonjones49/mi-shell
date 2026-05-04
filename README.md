@@ -31,6 +31,10 @@ The launcher has a text filter and you can use the mouse.
 
 ![The application launcher](assets/launcher.png)
 
+The notifications are also theme aware.
+
+![Notification](/home/simon/Documents/Git/mi-shell/assets/notification.png)
+
 ## What currently works
 
 | Module | What it does |
