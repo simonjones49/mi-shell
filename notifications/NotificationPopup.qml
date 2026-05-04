@@ -155,7 +155,7 @@ Scope {
 
                                 Text {
                                     text: notifCard.modelData.appName || "Notification"
-                                    color: root.theme.textMuted
+                                    color: root.theme.accentPrimary
                                     font.pixelSize: 11
                                     font.family: "Hack Nerd Font"
                                     Layout.alignment: Qt.AlignVCenter
@@ -208,7 +208,7 @@ Scope {
 
                                 Text {
                                     text: notifCard.modelData.body
-                                    color: root.theme.textSecondary
+                                    color: root.theme.textPrimary
                                     font.pixelSize: 12
                                     font.family: "Hack Nerd Font"
                                     wrapMode: Text.Wrap
