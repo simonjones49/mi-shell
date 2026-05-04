@@ -24,7 +24,7 @@ Scope {
   property string batteryLevel: "..."
   property int batteryTick: 0
   property date currentDate: new Date()
-
+  property string chargingStatus: "discharging"
   // --- TIMERS & PROCESSES ---
 
   // Midnight Watcher: Ensures the currentDate property updates when the day rolls over
@@ -54,6 +54,7 @@ Scope {
         battProc.running = false;
         battProc.running = true;
         root.batteryTick = 0;
+        battStatusProc.running = true;
       }
     }
     Component.onCompleted: {
@@ -89,7 +90,16 @@ Scope {
       }
     }
   }
-
+  Process {
+    id: battStatusProc
+    command: ["/bin/sh", "-c", "upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep 'state' | sed -e 's/state://' | sed -e 's/ //g'"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        root.chargingStatus = text.trim();
+      }
+    }
+  }
   property var pinnedApps: [
     { id: "floorp", icon: "browser", exec: "floorp" },
     { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
@@ -507,8 +517,17 @@ Scope {
             anchors.horizontalCenter: parent.horizontalCenter
             Row {
               anchors.centerIn: parent; spacing: 2
-              Text { text: "󰁹"; color: root.theme.accentPrimary; font.pixelSize: 14 }
-              Text { text: root.batteryLevel; color: root.theme.textPrimary; font.pixelSize: 11; font.bold: true }
+              Text {
+                // If 'charging', show bolt. If anything else (discharging/full), show battery.
+                text: (root.chargingStatus === "charging")
+                ? "󱐋 " + root.batteryLevel  // Bolt icon
+                : "  " + root.batteryLevel  // Battery icon
+                // Logic for the dynamic theme colors
+                color: (root.chargingStatus === "charging")
+                ? root.theme.accentPrimary
+                : root.theme.textPrimary
+              }
+
             }
           }
 
@@ -532,7 +551,7 @@ Scope {
             spacing: 2; anchors.horizontalCenter: parent.horizontalCenter
             Rectangle {
               width: 32; height: 26; radius: 16; color: root.theme.bgSurface
-              Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.accentOrange; font.pixelSize: 22 }
+              Text { anchors.centerIn: parent; text: "󰃠"; color: root.theme.textPrimary; font.pixelSize: 22 }
               MouseArea {
                 anchors.fill: parent
                 onWheel: (wheel) => {
