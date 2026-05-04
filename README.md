@@ -15,17 +15,17 @@ The pop out calendar links directly to khal.
 
 
 
-![Calendar and Agenda](/home/simon/Documents/Git/mi-shell/assets/calendar.png)
+![Calendar and Agenda](assets/calendar.png)
 
 
 
  and the system info has information about the distribution, kernel, uptime and disks.
 
-![System information](/home/simon/Documents/Git/mi-shell/assets/sys-info.png)
+![System information](assets/sys-info.png)
 
 The Control panel has easy access to networks, vpns, bluetooth, wallpaper and themes. It also has a media panel and session menu.
 
-![Control Centre](/home/simon/Documents/Git/mi-shell/assets/controlcentre.png)
+![Control Centre](assets/controlcentre.png)
 
 The launcher has a text filter and you can use the mouse.
 
@@ -33,7 +33,9 @@ The launcher has a text filter and you can use the mouse.
 
 The notifications are also theme aware.
 
-![Notification](/home/simon/Documents/Git/mi-shell/assets/notification.png)
+![Notification](assets/notification.png)
+
+
 
 ## What currently works
 
