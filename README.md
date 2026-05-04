@@ -11,9 +11,23 @@ It has pinned apps with chosen icons, the icon lights up when in use and dims wh
 
 ![The main Bar](assets/bar.png)
 
-The pop out calendar links directly to khal and the system widget has information.
+The pop out calendar links directly to khal.
 
-![Popout Widgets from the main bar](assets/widgets.png)
+
+
+![Calendar and Agenda](/home/simon/Documents/Git/mi-shell/assets/calendar.png)
+
+
+
+ and the system info has information about the distribution, kernel, uptime and disks.
+
+![System information](/home/simon/Documents/Git/mi-shell/assets/sys-info.png)
+
+The Control panel has easy access to networks, vpns, bluetooth, wallpaper and themes. It also has a media panel and session menu.
+
+![Control Centre](/home/simon/Documents/Git/mi-shell/assets/controlcentre.png)
+
+The launcher has a text filter and you can use the mouse.
 
 ![The application launcher](assets/launcher.png)
 
