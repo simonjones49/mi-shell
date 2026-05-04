@@ -148,7 +148,7 @@ Singleton {
             "color15=" + t.textPrimary
         ].join(" ");
         kittyProc.command = ["sh", "-c",
-            "printf '%s\\n' '" + colorsConf + "' > $HOME/.config/kitty/theme-colors.conf; " +
+            "printf '%s\\n' '" + colorsConf + "' > $HOME/.config/kitty/theme-colours.conf; " +
             "for sock in /tmp/kitty-*; do " +
             "[ -S \"$sock\" ] && kitty @ --to \"unix:$sock\" set-colors --all --configured " + colorsArgs + "; " +
             "done"

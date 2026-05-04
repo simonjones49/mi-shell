@@ -50,7 +50,7 @@ Scope {
       capsLockCheck.running = false; capsLockCheck.running = true;
 
       root.batteryTick++;
-      if (root.batteryTick >= 60) {
+      if (root.batteryTick >= 30) {
         battProc.running = false;
         battProc.running = true;
         root.batteryTick = 0;
