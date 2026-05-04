@@ -513,6 +513,7 @@ Scope {
 
           // --- BATTERY DISPLAY ---
           Rectangle {
+            visible: root.batteryLevel ? parseInt(root.batteryLevel.replace("%", "")) < 100 : false
             width: 40; height: 26; radius: 8; color: root.theme.bgSurface
             anchors.horizontalCenter: parent.horizontalCenter
             Row {
