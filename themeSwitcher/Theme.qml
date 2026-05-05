@@ -67,17 +67,6 @@ Singleton {
         return "rgba(" + hex.toString().replace("#", "") + "ff)";
     }
 
-    function applyHyprlandBorders(t) {
-        var active = hexToRgba(t.accentPrimary) + " " + hexToRgba(t.accentCyan) + " 45deg";
-        var inactive = hexToRgba(t.bgBorder);
-        hyprlandProc.command = ["sh", "-c",
-            'printf "general {\\n    col.active_border = ' + active + '\\n    col.inactive_border = ' + inactive + '\\n}\\n"' +
-            ' > "$HOME/.config/hypr/theme-borders.conf" && ' +
-            'hyprctl keyword general:col.active_border "' + active + '" && ' +
-            'hyprctl keyword general:col.inactive_border "' + inactive + '"'
-        ];
-        hyprlandProc.running = true;
-    }
 
     function setTheme(index) {
         if (index >= 0 && index < themes.length) {
@@ -86,7 +75,6 @@ Singleton {
             saveProc.running = true;
             applyKittyTheme(themes[index]);
             applySystemColorScheme(!isLightColor(themes[index].bgBase));
-            applyHyprlandBorders(themes[index]);
         }
     }
 
@@ -159,7 +147,7 @@ Singleton {
     Process { id: saveProc; running: false }
     Process { id: kittyProc; running: false }
     Process { id: colorSchemeProc; running: false }
-    Process { id: hyprlandProc; running: false }
+
 
     Process {
         id: loadProc
