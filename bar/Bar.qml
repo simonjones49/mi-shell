@@ -158,7 +158,7 @@ Scope {
       onStreamFinished: {
         let cleanText = text.trim().split('\n')[0];
         let t = parseInt(cleanText);
-        if (!isNaN(t)) root.currentTemp = Math.round(t / 1000).toString() + "°";
+        if (!isNaN(t)) root.currentTemp = Math.round(t / 1000).toString() + "°C";
       }
     }
   }
