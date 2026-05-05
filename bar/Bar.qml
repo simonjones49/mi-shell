@@ -423,16 +423,37 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
       Item {
         anchors.fill: parent
         anchors.margins: 6
+        Column {
+          anchors.top: parent.top
+          anchors.horizontalCenter: parent.horizontalCenter
+          anchors.topMargin: 6
+          spacing: 8
 
-        Rectangle {
-          width: 34; height: 34; radius: 8; color: root.theme.bgSurface; anchors.top: parent.top; anchors.horizontalCenter: parent.horizontalCenter
-          Text { text: "󰀻"; anchors.centerIn: parent; color: root.theme.accentPrimary; font.pixelSize: 36 }
-          MouseArea {
-            anchors.fill: parent
-            onClicked: {
-              let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-              p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "controlcentre", "toggle"];
-              p.running = true;
+          // --- Control Center Button ---
+          Rectangle {
+            width: 34; height: 34; radius: 8; color: root.theme.bgSurface
+            Text { text: "󰀻"; anchors.centerIn: parent; color: root.theme.accentPrimary; font.pixelSize: 36 }
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "controlcentre", "toggle"];
+                p.running = true;
+              }
+            }
+          }
+
+          // --- Media Player Button ---
+          Rectangle {
+            width: 34; height: 34; radius: 8; color: root.theme.bgSurface
+            Text { text: "󰎆"; anchors.centerIn: parent; color: root.theme.accentPrimary; font.pixelSize: 30 }
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "media", "toggle"];
+                p.running = true;
+              }
             }
           }
         }
