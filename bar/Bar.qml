@@ -503,7 +503,7 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
             width: 40; height: 45; radius: 8; color: root.theme.bgSurface
             Column {
               anchors.centerIn: parent; spacing: 1
-              Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 11; anchors.horizontalCenter: parent.horizontalCenter }
+              Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 13; anchors.horizontalCenter: parent.horizontalCenter }
               Text { text: SystemInfo.cpuUsage; font.pixelSize: 11; color: parseFloat(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
               Text { text: root.currentTemp; font.pixelSize: 11; color: parseInt(text) > 80 ? "#fb4934" : "#55aa00"; anchors.horizontalCenter: parent.horizontalCenter }
             }
@@ -525,7 +525,7 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
                 // Logic for the dynamic theme colors
                 color: (root.chargingStatus === "charging")
                 ? root.theme.accentPrimary
-                : root.theme.textPrimary
+                : root.theme.textPrimary ; font.pixelSize: 13
               }
 
             }
