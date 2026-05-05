@@ -25,6 +25,9 @@ Scope {
   property int batteryTick: 0
   property date currentDate: new Date()
   property string chargingStatus: "discharging"
+  property bool isSleepInhibited: false
+
+
   // --- TIMERS & PROCESSES ---
 
   // Midnight Watcher: Ensures the currentDate property updates when the day rolls over
@@ -191,11 +194,32 @@ Scope {
     }
   }
 
+
+  Process {
+    id: idleProc
+    // If pgrep fails to find swayidle, it returns a non-zero exit code,
+    // which we catch with || echo to set our internal flag.
+    command: ["sh", "-c", "pgrep -x swayidle > /dev/null || echo 'INHIBITED'"]
+    running: true
+
+    stdout: StdioCollector {
+      onStreamFinished: {
+        root.isSleepInhibited = text.includes("INHIBITED");
+        // Poll every 5 seconds to keep the UI snappy without taxing the CPU
+        pollTimer.start();
+      }
+    }
+  }
+
+  Timer {
+    id: pollTimer
+    interval: 5000
+    onTriggered: idleProc.running = true
+  }
   Timer {
     interval: 1000; running: true; repeat: true
     onTriggered: if (!niriProc.running) niriProc.running = true
   }
-
   Variants {
     model: Quickshell.screens
 
@@ -453,6 +477,38 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
                 let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
                 p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "media", "toggle"];
                 p.running = true;
+              }
+            }
+          }
+
+          // --- Sleep Inhibition (Coffee) Button ---
+          Rectangle {
+            width: 34; height: 34; radius: 8
+            color: root.theme.bgSurface
+
+            Text {
+              text: "󰅶" // Just the solid coffee cup
+              anchors.centerIn: parent
+
+              // Switch between bright accent and muted text
+              color: root.isSleepInhibited ? root.theme.accentPrimary : root.theme.textMuted
+
+              font.pixelSize: 24
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                // Create a one-shot process to run your script
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+
+                // Execute the specific caffeine script in your home bin
+                p.command = ["sh", "-c", "$HOME/bin/caffeine.sh"];
+                p.running = true;
+
+                // Immediately tell the idle observer to check the process status
+                // so the cup color updates instantly
+                idleProc.running = true;
               }
             }
           }

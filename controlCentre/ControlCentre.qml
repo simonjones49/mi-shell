@@ -112,7 +112,7 @@ PanelWindow {
     id: controlBox
     anchors.top: parent.top
     anchors.right: parent.right
-    anchors.topMargin: 60
+    anchors.topMargin: 10
     anchors.rightMargin: 10
 
     width: 300

@@ -55,7 +55,7 @@ Scope {
       exclusionMode: ExclusionMode.Ignore
       anchors.top: true
       anchors.right: true
-      WlrLayershell.margins { top: 3; right: 50 }
+      WlrLayershell.margins { top: 10; right: 60 }
 
       implicitWidth: 340
       implicitHeight: contentCol.implicitHeight + 40
