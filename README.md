@@ -99,7 +99,6 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
 
 # Mi-shell components
-spawn-at-startup "mi-sync"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
 ```
