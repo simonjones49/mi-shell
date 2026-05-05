@@ -14,6 +14,7 @@ import "themeSwitcher" // Renamed
 import "wallpaper"
 import "osd"
 import "controlCentre"
+import "mediaControl"
 
 Scope {
 
@@ -27,4 +28,5 @@ Scope {
     id: controlCentre
     theme: ts.theme
   }
+    MediaControl { theme: ts.theme }
 }

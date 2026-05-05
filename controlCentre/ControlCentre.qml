@@ -116,7 +116,7 @@ PanelWindow {
     anchors.rightMargin: 10
 
     width: 300
-    height: 420 // Increased height for the connection rows + media
+    height: 230 // Increased height for the connection rows + media
     color: controlCentre.theme.bgBase
     radius: 12
     border.color: controlCentre.theme.bgBorder
@@ -197,97 +197,97 @@ PanelWindow {
         }
       }
 
-      // --- MEDIA PLAYER ---
-      Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 140
-        Layout.topMargin: 10
-        radius: 10
-        color: controlCentre.theme.bgSurface
-        clip: true
-
-        ColumnLayout {
-          anchors.fill: parent
-          anchors.margins: 15
-          spacing: 5
-
-          Text {
-            text: {
-              if (!player) return "No Media";
-              let title = player.metadata["xesam:title"];
-              if (title && title.toString().trim().length > 0) return title;
-              let url = player.metadata["xesam:url"];
-              if (url) {
-                let filename = url.toString().split('/').pop();
-                return decodeURIComponent(filename).replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
-              }
-              return player.identity || "Unknown Source";
-            }
-            color: controlCentre.theme.textPrimary
-            font.bold: true
-            font.pixelSize: 16
-            Layout.fillWidth: true
-            elide: Text.ElideNone
-            clip: true
-          }
-
-          Text {
-            text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
-            color: controlCentre.theme.textPrimary
-            font.pixelSize: 13
-            Layout.fillWidth: true
-            elide: Text.ElideNone
-            clip: true
-          }
-
-          Rectangle {
-            id: progressBackground
-            Layout.fillWidth: true; Layout.preferredHeight: 4; Layout.topMargin: 5
-            color: controlCentre.theme.bgBase; radius: 2
-            Rectangle {
-              id: progressFill
-              // inside progressFill
-              width: (controlCentre.player && controlCentre.player.length > 0)
-              ? (controlCentre.player.position / controlCentre.player.length) * progressBackground.width
-              : 0
-              height: parent.height; color: controlCentre.theme.accentPrimary; radius: 2
-              Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.Linear } }
-            }
-            MouseArea {
-              anchors.fill: parent
-              onClicked: (mouse) => {
-                if (controlCentre.player && controlCentre.player.length > 0) {
-                  const ratio = mouse.x / width;
-                  controlCentre.player.position = ratio * controlCentre.player.length;
-                }
-              }
-            }
-          }
-
-          RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 10; spacing: 30
-            Text {
-              text: "󰒮"; font.family: "Hack Nerd Font"; font.pixelSize: 18
-              color: (controlCentre.player && controlCentre.player.canGoPrevious) ? "white" : "#555555"
-              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoPrevious) controlCentre.player.previous() }
-            }
-            Rectangle {
-              width: 36; height: 36; radius: 18; color: controlCentre.theme.accentPrimary
-              Text {
-                anchors.centerIn: parent; text: controlCentre.player && controlCentre.player.isPlaying ? "󰏤" : "󰐊"
-                color: controlCentre.theme.bgBase; font.family: "Hack Nerd Font"
-              }
-              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player) controlCentre.player.togglePlaying() }
-            }
-            Text {
-              text: "󰒭"; font.family: "Hack Nerd Font"; font.pixelSize: 18
-              color: (controlCentre.player && controlCentre.player.canGoNext) ? "white" : "#555555"
-              MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoNext) controlCentre.player.next() }
-            }
-          }
-        }
-      }
+      // // --- MEDIA PLAYER ---
+      // Rectangle {
+      //   Layout.fillWidth: true
+      //   Layout.preferredHeight: 140
+      //   Layout.topMargin: 10
+      //   radius: 10
+      //   color: controlCentre.theme.bgSurface
+      //   clip: true
+      //
+      //   ColumnLayout {
+      //     anchors.fill: parent
+      //     anchors.margins: 15
+      //     spacing: 5
+      //
+      //     Text {
+      //       text: {
+      //         if (!player) return "No Media";
+      //         let title = player.metadata["xesam:title"];
+      //         if (title && title.toString().trim().length > 0) return title;
+      //         let url = player.metadata["xesam:url"];
+      //         if (url) {
+      //           let filename = url.toString().split('/').pop();
+      //           return decodeURIComponent(filename).replace(/_/g, ' ').replace(/\.[^/.]+$/, "");
+      //         }
+      //         return player.identity || "Unknown Source";
+      //       }
+      //       color: controlCentre.theme.textPrimary
+      //       font.bold: true
+      //       font.pixelSize: 16
+      //       Layout.fillWidth: true
+      //       elide: Text.ElideNone
+      //       clip: true
+      //     }
+      //
+      //     Text {
+      //       text: controlCentre.player ? controlCentre.player.trackArtist : "Idle"
+      //       color: controlCentre.theme.textPrimary
+      //       font.pixelSize: 13
+      //       Layout.fillWidth: true
+      //       elide: Text.ElideNone
+      //       clip: true
+      //     }
+      //
+      //     Rectangle {
+      //       id: progressBackground
+      //       Layout.fillWidth: true; Layout.preferredHeight: 4; Layout.topMargin: 5
+      //       color: controlCentre.theme.bgBase; radius: 2
+      //       Rectangle {
+      //         id: progressFill
+      //         // inside progressFill
+      //         width: (controlCentre.player && controlCentre.player.length > 0)
+      //         ? (controlCentre.player.position / controlCentre.player.length) * progressBackground.width
+      //         : 0
+      //         height: parent.height; color: controlCentre.theme.accentPrimary; radius: 2
+      //         Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.Linear } }
+      //       }
+      //       MouseArea {
+      //         anchors.fill: parent
+      //         onClicked: (mouse) => {
+      //           if (controlCentre.player && controlCentre.player.length > 0) {
+      //             const ratio = mouse.x / width;
+      //             controlCentre.player.position = ratio * controlCentre.player.length;
+      //           }
+      //         }
+      //       }
+      //     }
+      //
+      //     RowLayout {
+      //       Layout.alignment: Qt.AlignHCenter
+      //       Layout.topMargin: 10; spacing: 30
+      //       Text {
+      //         text: "󰒮"; font.family: "Hack Nerd Font"; font.pixelSize: 18
+      //         color: (controlCentre.player && controlCentre.player.canGoPrevious) ? "white" : "#555555"
+      //         MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoPrevious) controlCentre.player.previous() }
+      //       }
+      //       Rectangle {
+      //         width: 36; height: 36; radius: 18; color: controlCentre.theme.accentPrimary
+      //         Text {
+      //           anchors.centerIn: parent; text: controlCentre.player && controlCentre.player.isPlaying ? "󰏤" : "󰐊"
+      //           color: controlCentre.theme.bgBase; font.family: "Hack Nerd Font"
+      //         }
+      //         MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player) controlCentre.player.togglePlaying() }
+      //       }
+      //       Text {
+      //         text: "󰒭"; font.family: "Hack Nerd Font"; font.pixelSize: 18
+      //         color: (controlCentre.player && controlCentre.player.canGoNext) ? "white" : "#555555"
+      //         MouseArea { anchors.fill: parent; onClicked: if (controlCentre.player && controlCentre.player.canGoNext) controlCentre.player.next() }
+      //       }
+      //     }
+      //   }
+      // }
       Item { Layout.fillHeight: true }
     }
   }

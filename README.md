@@ -23,7 +23,7 @@ The pop out calendar links directly to khal.
 
 ![System information](assets/sys-info.png)
 
-The Control panel has easy access to networks, vpns, bluetooth, wallpaper and themes. It also has a media panel and session menu.
+The Control panel has easy access to networks, vpns, bluetooth, wallpaper, themes and session menu.
 
 ![Control Centre](assets/controlcentre.png)
 
@@ -35,7 +35,9 @@ The notifications are also theme aware.
 
 ![Notification](assets/notification.png)
 
+There is a "sticky" media panel which sits next to the bar on top of other windows so you can control your media without changing workspace.
 
+![Media Panel](assets/mediapanel.png)
 
 ## What currently works
 
@@ -99,7 +101,6 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
 
 # Mi-shell components
-spawn-at-startup "mi-sync"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
 ```
