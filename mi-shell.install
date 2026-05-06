@@ -1,24 +1,27 @@
 post_install() {
+  local NIRI_DIR="$HOME/.config/niri"
+  local MI_KDL="$NIRI_DIR/mi-shell.kdl"
+
   echo ":: MI-SHELL SETUP ::"
-  echo "1. Add these to your niri config (~/.config/niri/config.kdl):"
-  echo '   spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"'
-  echo '   spawn-at-startup "awww-daemon"'
-  echo '   spawn-at-startup "mi-sync"'
-  echo '   spawn-at-startup "mi-power"'
-  echo '   spawn-at-startup "quickshell" "-c" "mi-shell"'
+
+  # 1. Create the modular KDL file
+  mkdir -p "$NIRI_DIR"
+  cat > "$MI_KDL" <<EOF
+# --- MI-SHELL STARTUP ---
+spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+spawn-at-startup "awww-daemon"
+spawn-at-startup "mi-power"
+spawn-at-startup "quickshell" "-c" "mi-shell"
+EOF
+
+  echo "1. A modular config has been created at: $MI_KDL"
+  echo "   Add this line to your ~/.config/niri/config.kdl to activate it:"
   echo ""
-  echo "2. Configuration:"
+  echo "   include \"mi-shell.kdl\""
+  echo ""
+
+  # The rest of your info
+  echo "2. Configuration & Customization:"
   echo "   - Local tweaks:   ~/.config/quickshell/mi-shell/"
   echo "   - System defaults: /etc/xdg/quickshell/mi-shell/"
-  echo ""
-  echo "   Note: To customize, copy the system defaults to your local tweaks folder."
-  echo ""
-  echo "3. Optional Extras:"
-  echo "   - For calendar sync: Install 'vdirsyncer' and run 'vdirsyncer sync'"
-  echo "   - For idle inhibition: Install 'wayland-idle-inhibitor-git'"
-  echo ""
-}
-
-post_upgrade() {
-  post_install
 }
