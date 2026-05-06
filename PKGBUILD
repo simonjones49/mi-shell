@@ -18,6 +18,8 @@ depends=(
   'niri'
   'polkit-gnome'
   'swww'
+  'swayidle'
+  'swaylock'
   'libnotify'
 
 

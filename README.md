@@ -63,9 +63,11 @@ These will be installed automatically if you use the `PKGBUILD`:
 * niri
 * polkit-gnome
 * swww
+* swayidle
+* swaylock
 * libnotify
 * pipewire
-* brightnessctl   
+* brightnessctl
 * khal
 * networkmanager
 * kitty
