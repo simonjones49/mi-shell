@@ -1,26 +1,42 @@
 post_install() {
   local NIRI_DIR="$HOME/.config/niri"
   local MI_KDL="$NIRI_DIR/mi-shell.kdl"
-
+  local NIRI_CONF="$NIRI_DIR/config.kdl"
   echo ":: MI-SHELL SETUP ::"
 
   # 1. Create the modular KDL file
   mkdir -p "$NIRI_DIR"
   cat > "$MI_KDL" <<EOF
-# --- MI-SHELL STARTUP ---
+// --- MI-SHELL STARTUP ---
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
+
+// --- Suggested Keybindings ---
+binds {
+    // Uncomment these to enable mi-shell shortcuts:
+    // Mod+D { spawn "qs" "-c" "mi-shell" "ipc" "call" "launcher" "toggle"; }
+    // Mod+S { spawn "mi-caffeine"; }
+}
 EOF
 
   echo "1. A modular config has been created at: $MI_KDL"
-  echo "   Add this line to your ~/.config/niri/config.kdl to activate it:"
+  echo "   Uncomment this line in your ~/.config/niri/config.kdl to activate it:"
   echo ""
   echo "   include \"mi-shell.kdl\""
   echo ""
 
-  # The rest of your info
+  # 2. Safely add a COMMENTED include to main config.kdl
+  if [ -f "$NIRI_CONF" ]; then
+    if ! grep -q "mi-shell.kdl" "$NIRI_CONF"; then
+      echo "" >> "$NIRI_CONF"
+      echo "// Uncomment the line below to enable mi-shell integration" >> "$NIRI_CONF"
+      echo "// include \"mi-shell.kdl\"" >> "$NIRI_CONF"
+      echo ":: Added commented 'include' to $NIRI_CONF"
+    fi
+  fi
+
   echo "2. Configuration & Customization:"
   echo "   - Local tweaks:   ~/.config/quickshell/mi-shell/"
   echo "   - System defaults: /etc/xdg/quickshell/mi-shell/"

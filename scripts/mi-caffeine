@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# \b ensures we match the whole word "mi-caffeine-flag"
+# and don't accidentally catch "mi-caffeine"
+CURR_STATE=$(pgrep -f "mi-caffeine-flag.sh")
+
+if [[ -z $CURR_STATE ]] ; then
+    mi-caffeine-flag.sh & disown
+    notify-send "Caffeine" "System will stay awake"
+else
+    # This will now only contain the PID of the flag
+    kill $CURR_STATE
+    notify-send "Caffeine" "Idle timers restored"
+fi

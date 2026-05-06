@@ -60,7 +60,8 @@ package() {
   # 2. Install scripts to /usr/bin
   install -d "${pkgdir}/usr/bin"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
-
+  install -m755 "${srcdir}/${pkgname}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
+  install -m755 "${srcdir}/${pkgname}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
   # 3. Clean up the config folder
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"

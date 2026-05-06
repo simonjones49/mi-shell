@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-TARGET_PROCESSES=("cmus" "zenity" "wine" "wineserver" "andi2pc.py"
+TARGET_PROCESSES=("musikcube" "zenity" "wine" "wineserver" "andi2pc.py"
     "autobikecopy.sh" "bbc.sh" "cloud_backup.sh"
     "upload_videos_fixed.sh" "usb_backup.sh" "avidemux"
-    "caffeine-flag.sh") # Added your ghost script
-CHECK_INTERVAL=30
+    "mi-caffeine-flag")
+CHECK_INTERVAL=15
 # ---------------------
 
 send_notification() {

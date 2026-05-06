@@ -503,7 +503,7 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
                 let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
 
                 // Execute the specific caffeine script in your home bin
-                p.command = ["sh", "-c", "$HOME/bin/caffeine.sh"];
+                p.command = ["mi-caffeine"];
                 p.running = true;
 
                 // Immediately tell the idle observer to check the process status
