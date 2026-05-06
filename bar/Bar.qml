@@ -64,7 +64,15 @@ Scope {
       battProc.running = true; // Run immediately on startup
     }
   }
-
+  Timer {
+    id: pollTimer
+    interval: 5000
+    onTriggered: idleProc.running = true
+  }
+  Timer {
+    interval: 1000; running: true; repeat: true
+    onTriggered: if (!niriProc.running) niriProc.running = true
+  }
   Process {
     id: numLockCheck
     command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::numlock/brightness && echo '1' || echo '0'"]
@@ -211,15 +219,7 @@ Scope {
     }
   }
 
-  Timer {
-    id: pollTimer
-    interval: 5000
-    onTriggered: idleProc.running = true
-  }
-  Timer {
-    interval: 1000; running: true; repeat: true
-    onTriggered: if (!niriProc.running) niriProc.running = true
-  }
+
   Variants {
     model: Quickshell.screens
 
