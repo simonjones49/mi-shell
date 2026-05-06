@@ -7,7 +7,7 @@ This started off as project to use something instead of the legacy Noctalia.
 
 It ended up becoming a new system which is growing as I get the time. 
 
-It has pinned apps with chosen icons, the icon lights up when in use and dims when closed. Running apps appear below. 
+It has pinned apps with chosen icons, the icon lights up when in use and dims when closed. Running apps appear below. The top button opens the control panel, the next opens the media panel and the coffee cup lights up when the system is sleep inhibited. You can also click the cup to toggle the state.
 
 ![The main Bar](assets/bar.png)
 
@@ -51,6 +51,7 @@ There is a "sticky" media panel which sits next to the bar on top of other windo
 | **Wallpaper Manager** | grid picker for wallpapers, preview, swww |
 | **Key Lock** | Number and caps lock on the bar |
 | **Power Menu** | Shut down, reboot and logout from the bar |
+| **Media Panel** | Shows current media playback with album art if available |
 
 ## Dependencies
 
@@ -94,18 +95,31 @@ To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will au
 2. Run `makepkg -si`.
 
 ### Niri Configuration
-To start the shell and its helper services automatically, add the following lines to your `~/.config/niri/config.kdl`:
+To start the shell and its helper services automatically, a new file is created in  `~/.config/niri/mi-shell.kdl`:
 
 
 ```kdl
-# Authentication agent for password popups
+// --- MI-SHELL STARTUP ---
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
-
-# Mi-shell components
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
+
+// --- Suggested Keybindings ---
+binds {
+    // Uncomment these to enable mi-shell shortcuts:
+    // Mod+D { spawn "qs" "-c" "mi-shell" "ipc" "call" "launcher" "toggle"; }
+    // Mod+S { spawn "mi-caffeine"; }
+}
 ```
+
+It also adds a line into ~/.config/niri/config.kdl
+
+```// include "mi-shell.kdl"```
+
+You just have to uncomment this and restart niri. 
+
+The optional binds are also in the file but please check they do not clash with any existing ones. 
 
 > **Note:** The `mi-shell` command ensures your local configuration directory exists at `~/.config/quickshell/mi-shell/`. The system-wide default configuration is installed at `/etc/xdg/quickshell/mi-shell/`.
 
