@@ -5,7 +5,7 @@ pkgrel=1
 pkgdesc="Vertical Quickshell bar for niri with power and calendar utilities"
 arch=('any')
 url="https://github.com/simonjones49/mi-shell"
-license=('GPL')
+license=('MIT')
 install=mi-shell.install
 
 depends=(
