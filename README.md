@@ -74,7 +74,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * kitty
   
 
-Optional
+### Optional
 
 * bluetui: for the Bluetooth manager UI
 * nmtui: for the Network manager UI
@@ -122,6 +122,8 @@ You just have to uncomment this and restart niri.
 The optional binds are also in the file but please check they do not clash with any existing ones. 
 
 > **Note:** The `mi-shell` command ensures your local configuration directory exists at `~/.config/quickshell/mi-shell/`. The system-wide default configuration is installed at `/etc/xdg/quickshell/mi-shell/`.
+
+You will also need to set something up as your secret tool, I use keepassxc as I got fed up with fighting with gnome-keyring and kwallet. 
 
 
 
