@@ -247,6 +247,15 @@ Scope {
         }
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
+          Item {
+            anchors.top: parent.top; anchors.right: parent.right; anchors.margins: 8
+            width: 20; height: 20
+            Text { text: "󰅖"; color: root.theme.textMuted; anchors.centerIn: parent; font.pixelSize: 18 }
+            MouseArea {
+              anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+              onClicked: cpuPopup.visible = false
+            }
+          }
           Column {
             anchors.fill: parent; anchors.margins: 12; spacing: 8
             Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
@@ -284,6 +293,15 @@ Scope {
 
         Rectangle {
           anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
+          Item {
+            anchors.top: parent.top; anchors.right: parent.right; anchors.margins: 10
+            width: 24; height: 24; z: 10 // Ensure it sits above the grid
+            Text { text: "󰅖"; color: root.theme.textMuted; anchors.centerIn: parent; font.pixelSize: 20 }
+            MouseArea {
+              anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+              onClicked: calendarPopup.visible = false
+            }
+          }
           Column {
             anchors.fill: parent; anchors.margins: 15; spacing: 15
 
@@ -366,7 +384,8 @@ Scope {
                   cursorShape: Qt.PointingHandCursor
                   onClicked: {
                     let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --class calendar -e ikhal"];                    p.running = true;
+                          p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --class calendar -e ikhal"];
+                          p.running = true;
                     calendarPopup.visible = false;
                   }
                 }

@@ -66,7 +66,30 @@ Scope {
         border.color: root.theme.bgBorder
         border.width: 1
         radius: 12
+        Item {
+          anchors.top: parent.top
+          anchors.right: parent.right
+          anchors.margins: 6
+          width: 24
+          height: 24
+          z: 100 // Keeps it above the album art and layout
 
+          Text {
+            anchors.centerIn: parent
+            text: "󰅖"
+            font.family: "Hack Nerd Font"
+            font.pixelSize: 20
+            color: closeMouse.containsMouse ? root.theme.accentPrimary : root.theme.textMuted
+          }
+
+          MouseArea {
+            id: closeMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.popupVisible = false // Directly toggles your root property
+          }
+        }
         ColumnLayout {
           id: contentCol
           anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
