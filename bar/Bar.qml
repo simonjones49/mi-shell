@@ -539,7 +539,12 @@ p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --cla
             }
           }
           Repeater {
-            model: root.niriWindows
+            model: {
+              // Create a copy, then sort explicitly
+              let sorted = root.niriWindows.slice();
+              sorted.sort((a, b) => Number(a.id) - Number(b.id));
+              return sorted;
+            }
             delegate: Rectangle {
               visible: !root.pinnedApps.some(p => p.id === modelData.app_id)
               height: visible ? 34 : 0; width: 34; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
