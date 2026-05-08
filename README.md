@@ -80,12 +80,12 @@ These will be installed automatically if you use the `PKGBUILD`:
 * nmtui: for the Network manager UI
 * floorp: for the browser shortcuts
 * playerctl: recommended for better MPRIS control
-* vdirsyncer: Optional: Only needed if you want to sync your local khal calendar with Google/CalDAV
+* vdirsyncer: Only needed if you want to sync your local khal calendar with Google/CalDAV
 * dolphin: Recommended file manager
 * kate: Recommended text editor
 * mpv: Recommended media player
 * nerd-fonts-git: fonts used in notifications
-  
+* Musikcube: Flawless music player with album art MPRIS connection
 
 ## Installation
 
