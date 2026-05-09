@@ -3,7 +3,7 @@
 # --- CONFIGURATION ---
 TARGET_PROCESSES=("musikcube" "zenity" "wine" "wineserver" "andi2pc.py"
     "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "backintime"
-    "upload_videos_fixed.sh" "usb_backup.sh" "avidemux"
+    "upload_videos_fixed.sh" "usb_backup.sh" "avidemux" "up2date.sh"
     "mi-caffeine-flag")
 CHECK_INTERVAL=15
 # ---------------------
