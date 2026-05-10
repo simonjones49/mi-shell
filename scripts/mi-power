@@ -3,7 +3,7 @@
 # --- CONFIGURATION ---
 TARGET_PROCESSES=("musikcube" "zenity" "wine" "wineserver" "andi2pc.py"
     "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "backintime"
-    "upload_videos_fixed.sh" "usb_backup.sh" "avidemux" "up2date.sh"
+    "upload_videos_fixed.sh" "usb_backup.sh" "up2date.sh"
     "mi-caffeine-flag")
 CHECK_INTERVAL=15
 # ---------------------
@@ -28,8 +28,8 @@ while true; do
         if pgrep -x "swayidle" > /dev/null; then
             pkill -9 swayidle
             # Kill any existing systemd-inhibit blocks to avoid duplicates
-            pkill -f "systemd-inhibit.*Mi-shell"
-            systemd-inhibit --what=idle:sleep --who="Mi-shell" --why="Target process running" sleep infinity &
+            # pkill -f "systemd-inhibit.*Mi-shell"
+            # systemd-inhibit --what=idle:sleep --who="Mi-shell" --why="Target process running" sleep infinity &
 
             send_notification "Keep Awake: ENABLED" "keepassxc-unlocked"
         fi
@@ -38,7 +38,7 @@ while true; do
         # If no target is running, swayidle MUST be alive
         if ! pgrep -x "swayidle" > /dev/null; then
             # Clean up the systemd-inhibit block
-            pkill -f "systemd-inhibit.*Mi-shell"
+            # pkill -f "systemd-inhibit.*Mi-shell"
 
             # Restart swayidle using your config
             swayidle -w \

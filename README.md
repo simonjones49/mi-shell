@@ -63,7 +63,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * qt6-svg
 * niri
 * polkit-gnome
-* swww
+* swaybg
 * swayidle
 * swaylock
 * libnotify

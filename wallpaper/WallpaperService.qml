@@ -9,7 +9,7 @@ Singleton {
 
   property list<string> wallpapers: []
   property string currentWallpaper: ""
-  property string backend: "awww"
+  property string backend: "swaybg"
 
   // Scan wallpaper directories
   Process {
@@ -50,9 +50,9 @@ Singleton {
   function setWallpaper(path) {
     currentWallpaper = path;
 
-    setProcess.command = ["awww", "img", path,
-    "--transition-type", "grow", "--transition-pos", "center",
-    "--transition-duration", "1"];
+    // 1. Kill previous swaybg to prevent stacking
+    // 2. Start new swaybg
+    setProcess.command = ["sh", "-c", "pkill swaybg; swaybg -i \"$1\" -m fill", "sh", path];
     setProcess.running = true;
 
     // Save to config
