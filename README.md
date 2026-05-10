@@ -104,6 +104,7 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
+spawn-at-startup "sh" "-c" "swaybg -i $(cat ~/.config/quickshell/mi-shell/wallpaper.conf) -m fill"
 
 // --- Suggested Keybindings ---
 binds {
