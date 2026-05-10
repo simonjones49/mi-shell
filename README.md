@@ -48,7 +48,7 @@ There is a "sticky" media panel which sits next to the bar on top of other windo
 | **Notifications** | mako-style notification daemon with popups |
 | **OSD** | on-screen display for volume and brightness changes, auto-hides |
 | **Theme Switcher** | 206 themes across 6 families, persists across restarts |
-| **Wallpaper Manager** | grid picker for wallpapers, preview, swww |
+| **Wallpaper Manager** | grid picker for wallpapers, preview, swaybg |
 | **Key Lock** | Number and caps lock on the bar |
 | **Power Menu** | Shut down, reboot and logout from the bar |
 | **Media Panel** | Shows current media playback with album art if available |
@@ -104,6 +104,7 @@ spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "awww-daemon"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
+spawn-at-startup "sh" "-c" "swaybg -i $(cat ~/.config/quickshell/mi-shell/wallpaper.conf) -m fill"
 
 // --- Suggested Keybindings ---
 binds {
