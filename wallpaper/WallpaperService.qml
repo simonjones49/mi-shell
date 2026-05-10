@@ -48,15 +48,20 @@ Singleton {
   }
 
   function setWallpaper(path) {
+    if (!path) return;
     currentWallpaper = path;
 
-    // 1. Kill previous swaybg to prevent stacking
-    // 2. Start new swaybg
+    // Reset the processes to ensure they can run again
+    setProcess.running = false;
+    saveProcess.running = false;
+
+    // 1. Update and Run Set Process
+    // We use "sh" as $0, so path becomes $1
     setProcess.command = ["sh", "-c", "pkill swaybg; swaybg -i \"$1\" -m fill", "sh", path];
     setProcess.running = true;
 
-    // Save to config
-    saveProcess.command = ["sh", "-c", 'printf "%s" "$1" > "$HOME/.config/quickshell/mi-shell/wallpaper.conf"', "sh", path];
+    // 2. Update and Run Save Process
+    saveProcess.command = ["sh", "-c", "printf '%s' \"$1\" > \"$HOME/.config/quickshell/mi-shell/wallpaper.conf\"", "sh", path];
     saveProcess.running = true;
   }
 
