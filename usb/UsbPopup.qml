@@ -36,7 +36,6 @@ PanelWindow {
     anchors.rightMargin: 10
 
     width: 300
-    // FIX: Remove the complex Math.min from here and let the Column decide
     height: driveColumn.implicitHeight + 32
 
     color: usbPopup.theme.bgBase
@@ -48,7 +47,6 @@ PanelWindow {
 
     ColumnLayout {
       id: driveColumn
-      // FIX: Use anchors.top and anchors.left/right instead of fill: parent
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
@@ -80,7 +78,6 @@ PanelWindow {
           color: driveMouse.containsMouse ? usbPopup.theme.bgSurface : "transparent"
           radius: 6
 
-          // 1. This MouseArea now sits ON TOP of the whole row
           MouseArea {
             id: driveMouse
             anchors.fill: parent
@@ -95,13 +92,11 @@ PanelWindow {
             }
           }
 
-          // 2. The Layout contains the visuals
           RowLayout {
             anchors.fill: parent
             anchors.margins: 8
-            spacing: 12
+            spacing: 8
 
-            // Icon
             Text {
               text: modelData.mountpoint ? "󱐩" : "󱊞"
               font.family: "Hack Nerd Font"
@@ -109,7 +104,6 @@ PanelWindow {
               color: modelData.mountpoint ? usbPopup.theme.accentPrimary : usbPopup.theme.textPrimary
             }
 
-            // Drive Name and Subtext
             ColumnLayout {
               Layout.fillWidth: true
               spacing: 2
@@ -127,16 +121,47 @@ PanelWindow {
               }
             }
 
-            // Power Off Button (Safely Remove)
+            // --- NEW: Open Folder Button ---
+            Rectangle {
+              visible: !!modelData.mountpoint
+              Layout.preferredWidth: 32
+              Layout.preferredHeight: 32
+              radius: 16
+              color: openMouse.containsMouse ? usbPopup.theme.bgSurface : "transparent"
+              border.width: openMouse.containsMouse ? 1 : 0
+              border.color: usbPopup.theme.accentPrimary
+
+              Text {
+                anchors.centerIn: parent
+                text: "󰝰" // Folder Open Icon
+                font.family: "Hack Nerd Font"
+                font.pixelSize: 16
+                color: usbPopup.theme.accentPrimary
+              }
+
+              MouseArea {
+                id: openMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                // propagateComposedEvents: false ensures clicking this doesn't trigger the unmount logic
+                onClicked: (mouse) => {
+                  mouse.accepted = true;
+                  let openProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
+                  openProc.command = ["xdg-open", modelData.mountpoint];
+                  openProc.running = true;
+                  usbPopup.visible = false;
+                }
+              }
+            }
+
+            // Power Off Button
             Rectangle {
               id: powerBtn
+              visible: !!modelData.mountpoint
               Layout.preferredWidth: 32
               Layout.preferredHeight: 32
               radius: 16
               color: powerMouse.containsMouse ? "#fb4934" : "transparent"
-
-              // CHANGE THIS: Show only when mounted
-              visible: modelData.mountpoint
 
               Text {
                 anchors.centerIn: parent
@@ -150,14 +175,12 @@ PanelWindow {
                 id: powerMouse
                 anchors.fill: parent
                 hoverEnabled: true
-                onClicked: {
+                onClicked: (mouse) => {
+                  mouse.accepted = true; // Stop event from hitting driveMouse
                   let devName = modelData.name.startsWith("/dev/") ? modelData.name : "/dev/" + modelData.name;
-
-                  // 1. Create a process to Unmount first
                   let unmountProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
                   unmountProc.command = ["udisksctl", "unmount", "-b", devName];
 
-                  // 2. When unmount finishes (success or fail), try to Power Off
                   unmountProc.runningChanged.connect(function() {
                     if (!unmountProc.running) {
                       let powerProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
