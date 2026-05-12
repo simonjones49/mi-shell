@@ -113,7 +113,7 @@ Scope {
   }
   property var pinnedApps: [
     { id: "librewolf", icon: "librewolf", exec: "librewolf.sh" },
-    { id: "nemo", icon: "system-file-manager", exec: "nemo" },
+    { id: "pcmanfm", icon: "system-file-manager", exec: "pcmanfm" },
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
 

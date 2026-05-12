@@ -86,7 +86,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * librewolf: for the browser shortcuts
 * playerctl: recommended for better MPRIS control
 * vdirsyncer: Only needed if you want to sync your local khal calendar with Google/CalDAV
-* dolphin: Recommended file manager
+* pcmanfm: Recommended file manager
 * kate: Recommended text editor
 * mpv: Recommended media player
 * nerd-fonts-git: fonts used in notifications
