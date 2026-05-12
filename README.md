@@ -83,7 +83,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 
 * bluetui: for the Bluetooth manager UI
 * nmtui: for the Network manager UI
-* floorp: for the browser shortcuts
+* librewolf: for the browser shortcuts
 * playerctl: recommended for better MPRIS control
 * vdirsyncer: Only needed if you want to sync your local khal calendar with Google/CalDAV
 * dolphin: Recommended file manager

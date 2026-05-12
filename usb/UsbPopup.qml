@@ -58,7 +58,7 @@ PanelWindow {
         font.family: "Hack Nerd Font"
         font.pixelSize: 14
         font.bold: true
-        color: usbPopup.theme.textPrimary
+        color: usbPopup.theme.accentPrimary
       }
 
       Text {
@@ -88,7 +88,7 @@ PanelWindow {
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
               p.command = ["udisksctl", action, "-b", devName];
               p.running = true;
-              usbPopup.visible = false;
+              //usbPopup.visible = false;
             }
           }
 
@@ -100,7 +100,7 @@ PanelWindow {
             Text {
               text: modelData.mountpoint ? "󱐩" : "󱊞"
               font.family: "Hack Nerd Font"
-              font.pixelSize: 20
+              font.pixelSize: 14
               color: modelData.mountpoint ? usbPopup.theme.accentPrimary : usbPopup.theme.textPrimary
             }
 
