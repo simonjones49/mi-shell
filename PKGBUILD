@@ -28,6 +28,7 @@ depends=(
   'khal'            # Calendar
   'networkmanager'  # Network
   'kitty'           # The default terminal for bar shortcuts
+  'udisks2' # External drive management
 )
 
 optdepends=(

@@ -15,6 +15,7 @@ import "wallpaper"
 import "osd"
 import "controlCentre"
 import "mediaControl"
+import "usb"
 
 Scope {
 
@@ -29,4 +30,6 @@ Scope {
     theme: ts.theme
   }
     MediaControl { theme: ts.theme }
+    UsbLogic { id: usbMonitor }
+    UsbPopup { id: usbPopupComp; theme: ts.theme }
 }

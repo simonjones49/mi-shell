@@ -39,6 +39,10 @@ There is a "sticky" media panel which sits next to the bar on top of other windo
 
 ![Media Panel](assets/mediapanel.png)
 
+Now has USB drive management. You can mount, unmount and power off from the button on the bar.
+
+![USB Popup](assets/usb.png)
+
 ## What currently works
 
 | Module | What it does |
@@ -52,6 +56,7 @@ There is a "sticky" media panel which sits next to the bar on top of other windo
 | **Key Lock** | Number and caps lock on the bar |
 | **Power Menu** | Shut down, reboot and logout from the bar |
 | **Media Panel** | Shows current media playback with album art if available |
+| **USB Management** | USB Drives can be mounted, unmounted and powered off. |
 
 ## Dependencies
 
@@ -72,7 +77,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * khal
 * networkmanager
 * kitty
-  
+* udisks2
 
 ### Optional
 

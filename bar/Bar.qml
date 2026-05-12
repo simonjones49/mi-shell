@@ -112,8 +112,8 @@ Scope {
     }
   }
   property var pinnedApps: [
-    { id: "floorp", icon: "browser", exec: "floorp" },
-    { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
+    { id: "librewolf", icon: "librewolf", exec: "librewolf.sh" },
+    { id: "nemo", icon: "system-file-manager", exec: "nemo" },
     { id: "org.kde.kate", icon: "kate", exec: "kate" }
   ]
 
@@ -122,7 +122,7 @@ Scope {
     let id = appId.toLowerCase();
     const iconMap = {
       "kitty": "terminal",
-      "floorp": "browser",
+      "librewolf": "browser",
       "org.kde.kate": "kate",
       "nautilus": "system-file-manager",
       "aerc": "email",
@@ -675,7 +675,30 @@ Scope {
               }
             }
           }
+          // --- USB Button (Control Center Style) ---
+          Rectangle {
+            // Only show the button if a drive is actually plugged in
+            visible: usbMonitor.driveList.length > 0
+            width: 36; height: 20; radius: 16
+            color: root.theme.bgSurface
 
+            Text {
+              text: "󱊞"
+              anchors.centerIn: parent
+              color: root.theme.accentPrimary
+              font.pixelSize: 20
+            }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
+                // We call "usbpopupcomp" (the ID from shell.qml)
+                p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "usbpopupcomp", "toggle"];
+                p.running = true;
+              }
+            }
+          }
           Column {
             spacing: 4; anchors.horizontalCenter: parent.horizontalCenter
             Repeater {

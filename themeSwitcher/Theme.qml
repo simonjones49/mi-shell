@@ -160,7 +160,7 @@ Singleton {
                     root.currentIndex = idx;
                     root.applyKittyTheme(root.themes[idx]);
                     root.applySystemColorScheme(!root.isLightColor(root.themes[idx].bgBase));
-                    root.applyHyprlandBorders(root.themes[idx]);
+                    //root.applyHyprlandBorders(root.themes[idx]);
                 }
             }
         }
