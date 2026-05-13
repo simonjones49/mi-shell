@@ -47,6 +47,15 @@ pkgver() {
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
+prepare() {
+  # Note: Use the variable defined in source, which is ${pkgname}
+  cd "${srcdir}/${pkgname}"
+
+  # Remove the .sh extension from the Bar.qml file for the system installation
+  # We use the backslash to escape the dot so it's a literal match
+  sed -i 's/exec: "librewolf\.sh"/exec: "librewolf"/g' bar/Bar.qml
+}
+
 package() {
   local _src="${srcdir}/${pkgname}"
 
@@ -54,16 +63,19 @@ package() {
   install -d "${pkgdir}/etc/xdg/quickshell/mi-shell"
   cp -r "${_src}/"* "${pkgdir}/etc/xdg/quickshell/mi-shell/"
 
-  # 2. Install scripts to /usr/bin using -D to ensure path creation
+  # 2. Install scripts to /usr/bin
   install -Dm755 "${_src}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -Dm755 "${_src}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
   install -Dm755 "${_src}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
 
-  # 3. Install example config for user home directory setup
+  # 3. Install example config
   install -Dm644 "${_src}/mi-shell.kdl" "${pkgdir}/usr/share/mi-shell/mi-shell.kdl.example"
 
-  # 4. Cleanup system config folder (Remove build-only files)
+  # 4. Cleanup (Keep the system files lean)
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/mi-shell.install"
+
+  # Optional: Also remove the .git directory if it was copied by the 'cp -r'
+  rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/.git"
 }
