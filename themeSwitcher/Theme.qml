@@ -71,7 +71,15 @@ Singleton {
     function setTheme(index) {
         if (index >= 0 && index < themes.length) {
             currentIndex = index;
-            saveProc.command = ["sh", "-c", 'printf "%s" "$1" > "$HOME/.config/quickshell/mi-shell/theme.conf"', "sh", String(index)];
+
+            // This combined command ensures mkdir finishes successfully (&&) before printf runs
+            saveProc.command = [
+                "sh", "-c",
+                'mkdir -p "$HOME/.config/quickshell/mi-shell" && printf "%s" "$1" > "$HOME/.config/quickshell/mi-shell/theme.conf"',
+                "sh",
+                String(index)
+            ];
+
             saveProc.running = true;
             applyKittyTheme(themes[index]);
             applySystemColorScheme(!isLightColor(themes[index].bgBase));
