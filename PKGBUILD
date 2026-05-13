@@ -58,11 +58,13 @@ package() {
   install -d "${pkgdir}/etc/xdg/quickshell/mi-shell"
   cp -r "${srcdir}/${pkgname}/"* "${pkgdir}/etc/xdg/quickshell/mi-shell/"
 
-  # 2. Install scripts to /usr/bin
+  # 2. Install scripts
   install -d "${pkgdir}/usr/bin"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
   install -m755 "${srcdir}/${pkgname}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
+
+  install -Dm644 "${srcdir}/${pkgname}/mi-shell.kdl" "${pkgdir}/usr/share/mi-shell/mi-shell.kdl.example"
   # 3. Clean up the config folder
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"
