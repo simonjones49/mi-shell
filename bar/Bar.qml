@@ -613,12 +613,18 @@ Scope {
 
           // --- BATTERY DISPLAY ---
           Rectangle {
-            visible: root.batteryLevel ? parseInt(root.batteryLevel.replace("%", "")) < 100 : false
-            width: 40; height: 26; radius: 8; color: root.theme.bgSurface
+            visible: {
+              if (!root.batteryLevel || root.batteryLevel === "" || root.batteryLevel === "0%")
+                return false;
+
+              let level = parseInt(root.batteryLevel.replace("%", ""));
+              return level > 0 && level < 100;
+            }            width: 40; height: 26; radius: 8; color: root.theme.bgSurface
             anchors.horizontalCenter: parent.horizontalCenter
             Row {
               anchors.centerIn: parent; spacing: 2
               Text {
+                font.family: "JetBrainsMono Nerd Font"
                 // If 'charging', show bolt. If anything else (discharging/full), show battery.
                 text: (root.chargingStatus === "charging")
                 ? "󱐋 " + root.batteryLevel  // Bolt icon
