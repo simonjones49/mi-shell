@@ -5,11 +5,19 @@ post_install() {
   echo "   1. Create the niri config directory if it doesn't exist:"
   echo "      mkdir -p ~/.config/niri"
   echo ""
-  echo "   2. Copy the modular config file:"
-  echo "      cp /usr/share/mi-shell/mi-shell.kdl.example ~/.config/niri/mi-shell.kdl"
+  echo "   2. Copy the modular config file (don't overwrite if it exists):"
+  echo "      cp -n /usr/share/mi-shell/mi-shell.kdl.example ~/.config/niri/mi-shell.kdl"
   echo ""
   echo "   3. Add the following line to your ~/.config/niri/config.kdl:"
   echo "      include \"mi-shell.kdl\""
   echo ""
-  echo "   Note: Customizations can be made in ~/.config/quickshell/mi-shell/"
+  echo ":: SYSTEM SERVICES ::"
+  echo "   - Ensure NetworkManager is enabled for the internet applet:"
+  echo "     systemctl enable --now NetworkManager"
+  echo ""
+  echo "   - Note: Customizations can be made in ~/.config/quickshell/mi-shell/"
+}
+
+post_upgrade() {
+  post_install
 }
