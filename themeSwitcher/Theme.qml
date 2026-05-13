@@ -168,11 +168,17 @@ Singleton {
 
     FileView {
         id: themesFile
-        readonly property string configRoot: Quickshell.env("XDG_CONFIG_HOME")
+        readonly property string userConfig: Quickshell.env("XDG_CONFIG_HOME")
         ? Quickshell.env("XDG_CONFIG_HOME") + "/quickshell/mi-shell"
         : Quickshell.env("HOME") + "/.config/quickshell/mi-shell"
 
-        path: configRoot + "/themeSwitcher/themes.json"
+        // If the theme file doesn't exist in the user folder, use the system folder
+        readonly property string systemConfig: "/etc/xdg/quickshell/mi-shell"
+
+        // You can use this to determine the final path
+        path: fileExists(userConfig + "/themeSwitcher/themes.json")
+        ? userConfig + "/themeSwitcher/themes.json"
+        : systemConfig + "/themeSwitcher/themes.json"
         onTextChanged: {
             const raw = themesFile.text();
             if (!raw) return;
