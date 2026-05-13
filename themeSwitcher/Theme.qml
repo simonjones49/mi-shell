@@ -168,7 +168,11 @@ Singleton {
 
     FileView {
         id: themesFile
-        path: Quickshell.env("HOME") + "/.config/quickshell/mi-shell/themeSwitcher/themes.json"
+        readonly property string configRoot: Quickshell.env("XDG_CONFIG_HOME")
+        ? Quickshell.env("XDG_CONFIG_HOME") + "/quickshell/mi-shell"
+        : Quickshell.env("HOME") + "/.config/quickshell/mi-shell"
+
+        path: configRoot + "/themeSwitcher/themes.json"
         onTextChanged: {
             const raw = themesFile.text();
             if (!raw) return;
