@@ -1,5 +1,8 @@
 #!/bin/bash
-
+# Prevent multiple instances
+if pidof -x "${0##*/}" -o $$ > /dev/null; then
+    exit 1
+fi
 # --- CONFIGURATION ---
 TARGET_PROCESSES=("musikcube" "wine" "wineserver" "andi2pc.py"
     "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "backintime"
@@ -13,13 +16,22 @@ send_notification() {
 }
 
 while true; do
+# Check for any active target processes
     MATCH_FOUND=false
-
-    # Check for any active target processes
     for PROC in "${TARGET_PROCESSES[@]}"; do
-        if pgrep -f "$PROC" | grep -v "$$" > /dev/null; then
-            MATCH_FOUND=true
-            break
+        # Use -x for binaries, keep -f for .sh/.py scripts but be careful
+        if [[ "$PROC" == *".sh"* || "$PROC" == *".py"* ]]; then
+             # Match the script name but ignore the current script and the pgrep command
+             if pgrep -f "$PROC" | grep -v -E "$$|${0##*/}" > /dev/null; then
+                MATCH_FOUND=true
+                break
+             fi
+        else
+            # Exact match for binaries like musikcube/wine
+            if pgrep -x "$PROC" > /dev/null; then
+                MATCH_FOUND=true
+                break
+            fi
         fi
     done
 
