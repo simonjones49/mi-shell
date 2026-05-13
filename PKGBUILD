@@ -25,6 +25,7 @@ depends=(
   'kitty'
   'udisks2'
   'ttf-jetbrains-mono-nerd'
+  'network-manager-applet'
 )
 
 optdepends=(

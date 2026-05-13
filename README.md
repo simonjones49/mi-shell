@@ -79,6 +79,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * kitty
 * udisks2
 *   ttf-jetbrains-mono-nerd
+*   network-manager-applet
 
 ### Optional
 
