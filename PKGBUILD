@@ -36,6 +36,7 @@ optdepends=(
   'pcmanfm: Recommended file manager'
   'kate: Recommended text editor'
   'mpv: Recommended media player'
+  'qarma: For notifications'
 )
 
 makedepends=('git')

@@ -63,7 +63,7 @@ Now has USB drive management. You can mount, unmount and power off from the butt
 ### Required
 These will be installed automatically if you use the `PKGBUILD`:
 
-* quickshell-git
+* quickshell-git (AUR)
 * qt6-wayland
 * qt6-svg
 * niri
@@ -78,6 +78,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * networkmanager
 * kitty
 * udisks2
+*   ttf-jetbrains-mono-nerd
 
 ### Optional
 
@@ -91,6 +92,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 * mpv: Recommended media player
 * nerd-fonts-git: fonts used in notifications
 * Musikcube: Flawless music player with album art MPRIS connection
+* qarma: For notifications
 
 ## Installation
 
