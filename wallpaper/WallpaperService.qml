@@ -61,7 +61,12 @@ Singleton {
     setProcess.running = true;
 
     // 2. Update and Run Save Process
-    saveProcess.command = ["sh", "-c", "printf '%s' \"$1\" > \"$HOME/.config/quickshell/mi-shell/wallpaper.conf\"", "sh", path];
+    saveProcess.command = [
+      "sh", "-c",
+      'mkdir -p "$HOME/.config/quickshell/mi-shell" && printf "%s" "$1" > "$HOME/.config/quickshell/mi-shell/wallpaper.conf"',
+      "sh",
+      path
+    ];
     saveProcess.running = true;
   }
 
