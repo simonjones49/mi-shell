@@ -1,11 +1,10 @@
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
 spawn-at-startup "mi-power"
 spawn-at-startup "quickshell" "-c" "mi-shell"
-spawn-sh-at-startup "startup.sh"
 spawn-at-startup "sh" "-c" "swaybg -i $(cat ~/.config/quickshell/mi-shell/wallpaper.conf) -m fill"
 // --- Suggested Keybindings ---
 binds {
-    // Uncomment these to enable mi-shell shortcuts:
+    // Copy these to enable mi-shell shortcuts:
      Mod+D { spawn "qs" "-c" "mi-shell" "ipc" "call" "launcher" "toggle"; }
      Mod+S { spawn "mi-caffeine"; }
     Ctrl+Alt+R { spawn "recording_toggle.sh"; }
@@ -13,4 +12,9 @@ binds {
      Mod+Shift+K { spawn "list_binds.sh"; }
      Mod+Plus { consume-or-expel-window-left; }
     Mod+Dead_Grave { consume-or-expel-window-right; }
+}
+// Environment settings
+// You will need to install qt6t and choose a theme, also kvantum for a complete setup
+environment {
+  "QT_QPA_PLATFORMTHEME" "qt6ct"
 }
