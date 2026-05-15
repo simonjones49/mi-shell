@@ -107,18 +107,18 @@ To start the shell and its helper services automatically, a new file is created 
 
 
 ```kdl
-// --- MI-SHELL STARTUP ---
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-spawn-at-startup "awww-daemon"
 spawn-at-startup "mi-power"
+spawn-at-startup "nm-applet"
 spawn-at-startup "quickshell" "-c" "mi-shell"
 spawn-at-startup "sh" "-c" "swaybg -i $(cat ~/.config/quickshell/mi-shell/wallpaper.conf) -m fill"
-
 // --- Suggested Keybindings ---
 binds {
     // Uncomment these to enable mi-shell shortcuts:
-    // Mod+D { spawn "qs" "-c" "mi-shell" "ipc" "call" "launcher" "toggle"; }
-    // Mod+S { spawn "mi-caffeine"; }
+     Mod+D { spawn "qs" "-c" "mi-shell" "ipc" "call" "launcher" "toggle"; }
+     Mod+S { spawn "mi-caffeine"; }
+     Mod+Plus { consume-or-expel-window-left; }
+    Mod+Dead_Grave { consume-or-expel-window-right; }
 }
 ```
 
