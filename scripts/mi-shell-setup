@@ -4,53 +4,110 @@ set -e
 # --- VARIABLE DEFINITIONS ---
 # Define directories
 NIRI_DIR="$HOME/.config/niri"
+WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+MI_USER_DIR="$HOME/.config/quickshell/mi-shell"
 
 # Define target file paths
 NIRI_CONFIG="$NIRI_DIR/config.kdl"
 MISHELL_KDL_TARGET="$NIRI_DIR/mi-shell.kdl"
+WALLPAPER_CONF="$MI_USER_DIR/wallpaper.conf"
 
-# Define source system templates
+# Define source system templates / assets
 MISHELL_KDL_TEMPLATE="/usr/share/mi-shell/mi-shell.kdl.example"
+MI_SHELL_ROOT="/usr/share/mi-shell"
+DEFAULT_WALLPAPER_SRC="$MI_SHELL_ROOT/wallpaper/mi-wall.jpg"
 
 # Define injection pattern string
 INCLUDE_STR='include "mi-shell.kdl"'
 PATTERN="^[[:space:]]*include[[:space:]]+['\"]mi-shell\.kdl['\"]"
 
-echo "🚀 Starting mi-shell user environment configuration..."
+echo "=== Starting mi-shell user environment configuration ==="
 
 # --- STEP 1: Ensure a baseline Niri configuration exists FIRST ---
 if [ ! -f "$NIRI_CONFIG" ]; then
-    echo "ℹ️ No existing Niri configuration found at $NIRI_CONFIG"
+    echo "Info: No existing Niri configuration found at $NIRI_CONFIG"
 
-    # FIX: Changed config.kdl to default-config.kdl
     if [ -f "/usr/share/doc/niri/default-config.kdl" ]; then
-        echo "📋 Seeding official system Niri defaults..."
+        echo "[Config] Seeding official system Niri defaults..."
         mkdir -p "$NIRI_DIR"
         cp /usr/share/doc/niri/default-config.kdl "$NIRI_CONFIG"
     else
-        echo "❌ Error: Could not locate a default Niri template on your system."
+        echo "Error: Could not locate a default Niri template on your system."
         exit 1
     fi
 fi
 
-# --- STEP 2: Copy the actual mi-shell.kdl file into the Niri directory ---
+# --- STEP 2: Copy mi-shell.kdl and initialize user wallpaper space ---
 if [ -f "$MISHELL_KDL_TEMPLATE" ]; then
-    echo "🗂️ Placing mi-shell.kdl layout rules into $NIRI_DIR..."
+    echo "[Config] Placing mi-shell.kdl layout rules into $NIRI_DIR..."
     mkdir -p "$NIRI_DIR"
     cp "$MISHELL_KDL_TEMPLATE" "$MISHELL_KDL_TARGET"
 else
-    echo "⚠️ Warning: System template not found at $MISHELL_KDL_TEMPLATE."
-    echo "   Skipping mi-shell.kdl file copy. You may need to copy it manually."
+    echo "Warning: System template not found at $MISHELL_KDL_TEMPLATE."
+    echo "    Skipping mi-shell.kdl file copy. You may need to copy it manually."
+fi
+
+echo "[Storage] Setting up user assets and configuration directories..."
+mkdir -p "$WALLPAPER_DIR"
+mkdir -p "$MI_USER_DIR"
+
+# Safely check if the user's wallpaper directory is completely empty
+shopt -s nullglob
+files=("$WALLPAPER_DIR"/*)
+shopt -u nullglob # Turn off nullglob to restore standard shell behavior
+
+if [ ${#files[@]} -eq 0 ]; then
+    if [ -f "$DEFAULT_WALLPAPER_SRC" ]; then
+        echo "[Wallpaper] First-time setup: Seeding default wallpaper to $WALLPAPER_DIR..."
+        cp "$DEFAULT_WALLPAPER_SRC" "$WALLPAPER_DIR/mi-wall.jpg"
+        chmod 644 "$WALLPAPER_DIR/mi-wall.jpg" # Ensure standard user read/write permissions
+
+        echo "[Wallpaper] Creating local wallpaper.conf pointing to your new file..."
+        echo "$WALLPAPER_DIR/mi-wall.jpg" > "$WALLPAPER_CONF"
+    else
+        echo "Warning: System wallpaper asset not found at $DEFAULT_WALLPAPER_SRC"
+    fi
+else
+    echo "[Wallpaper] Wallpapers directory already has files. Leaving your custom layout alone."
+
+    # If they have files but somehow don't have a config, point to their first image
+    if [ ! -f "$WALLPAPER_CONF" ]; then
+        echo "[Wallpaper] Initializing missing wallpaper.conf with your first existing image..."
+        echo "${files[0]}" > "$WALLPAPER_CONF"
+    fi
 fi
 
 # --- STEP 3: Now that config.kdl definitely exists, safely append the include ---
 if grep -E -q "$PATTERN" "$NIRI_CONFIG"; then
-    echo "✔️ mi-shell inclusion is already present in your Niri configuration (or handled manually)."
+    echo "[Niri] mi-shell inclusion is already present in your Niri configuration."
 else
-    echo "⚡ Injecting mi-shell inclusion into Niri config..."
+    echo "[Niri] Injecting mi-shell inclusion into Niri config..."
     # Always append using standard canonical formatting (with valid KDL '//' comments)
     echo -e "\n// Added by mi-shell package setup\n$INCLUDE_STR" >> "$NIRI_CONFIG"
-    echo "✅ Done! mi-shell is now hooked into Niri."
+    echo "[Niri] Success: mi-shell is now hooked into Niri."
 fi
-mkdir -p "$HOME/Pictures/Wallpapers"
-echo "🎉 Setup complete!"
+
+# --- STEP 4: List optional dependencies from PKGBUILD ---
+echo ""
+
+# Locate the PKGBUILD (assuming it's in the same directory as the script or project root)
+PKGBUILD_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/PKGBUILD"
+
+if [ -f "$PKGBUILD_PATH" ]; then
+    echo "=== Optional Dependencies ==="
+    echo "The following optional components can be installed to complete your system layout:"
+    echo ""
+
+    # Execute PKGBUILD in a safe subshell sandbox to read the optdepends array cleanly
+    OPT_DEPS_RAW=$(bash -c "source '$PKGBUILD_PATH' && printf '%s\n' \"\${optdepends[@]}\"")
+
+    # Print each dependency exactly as formatted in the PKGBUILD
+    while IFS= read -r dep; do
+        if [ -n "$dep" ]; then
+            echo "    * $dep"
+        fi
+    done <<< "$OPT_DEPS_RAW"
+    echo ""
+fi
+
+echo "=== Setup complete! ==="
