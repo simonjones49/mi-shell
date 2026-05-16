@@ -73,8 +73,9 @@ package() {
   # Add setup script directly from your repository's scripts folder
   install -Dm755 "${_src}/scripts/mi-shell-setup" "${pkgdir}/usr/bin/mi-shell-setup"
 
-  # 3. Install example config
+# 3. Install system assets & example config
   install -Dm644 "${_src}/mi-shell.kdl" "${pkgdir}/usr/share/mi-shell/mi-shell.kdl.example"
+  install -Dm644 "${_src}/mi-wall.jpg" "${pkgdir}/usr/share/mi-shell/mi-wall.jpg"
 
   # 4. Cleanup (Keep the system files lean)
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
