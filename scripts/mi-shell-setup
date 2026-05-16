@@ -109,5 +109,8 @@ if [ -f "$PKGBUILD_PATH" ]; then
     done <<< "$OPT_DEPS_RAW"
     echo ""
 fi
-
-echo "=== Setup complete! ==="
+# --- STEP 5: Launch Guidance ---
+echo "=== Quick Start Tip ==="
+echo "To launch your new desktop environment correctly with all system services,"
+echo "make sure to start your compositor using: niri-session"
+echo ""
