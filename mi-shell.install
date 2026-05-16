@@ -1,21 +1,19 @@
 post_install() {
-  echo ":: MI-SHELL SETUP ::"
-  echo "   To integrate mi-shell with niri, follow these steps:"
+  echo ":: MI-SHELL INSTALLED SUCCESSFULLY ::"
   echo ""
-  echo "   1. Create the niri config directory if it doesn't exist:"
-  echo "      mkdir -p ~/.config/niri"
+  echo "   To complete the setup for your user environment, please run"
+  echo "   the following command in your terminal (do NOT use sudo):"
   echo ""
-  echo "   2. Copy the modular config file (don't overwrite if it exists):"
-  echo "      cp -n /usr/share/mi-shell/mi-shell.kdl.example ~/.config/niri/mi-shell.kdl"
-  echo ""
-  echo "   3. Add the following line to your ~/.config/niri/config.kdl:"
-  echo "      include \"mi-shell.kdl\""
+  echo "       mi-shell-setup"
   echo ""
   echo ":: SYSTEM SERVICES ::"
-  echo "   - Ensure NetworkManager is enabled for the internet applet:"
-  echo "     systemctl enable --now NetworkManager"
+  echo "   - Ensuring NetworkManager is active for the internet applet..."
+
+  # Since this hook runs as root, you can safely enable the system service directly!
+  if ! systemctl is-active --quiet NetworkManager; then
+    systemctl enable --now NetworkManager
+  fi
   echo ""
-  echo "   - Note: Customizations can be made in ~/.config/quickshell/mi-shell/"
 }
 
 post_upgrade() {

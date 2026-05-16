@@ -2,7 +2,7 @@
 pkgname=mi-shell-git
 pkgver=r31.678abcd
 pkgrel=1
-pkgdesc="Vertical Quickshell bar for niri with power and calendar utilities"
+pkgdesc="Vertical Quickshell bar for niri with basic utilities"
 arch=('any')
 url="https://github.com/simonjones49/mi-shell"
 license=('MIT')
@@ -70,6 +70,9 @@ package() {
   install -Dm755 "${_src}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
   install -Dm755 "${_src}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
 
+  # Add setup script directly from your repository's scripts folder
+  install -Dm755 "${_src}/scripts/mi-shell-setup" "${pkgdir}/usr/bin/mi-shell-setup"
+
   # 3. Install example config
   install -Dm644 "${_src}/mi-shell.kdl" "${pkgdir}/usr/share/mi-shell/mi-shell.kdl.example"
 
@@ -77,7 +80,5 @@ package() {
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/PKGBUILD"
   rm -f "${pkgdir}/etc/xdg/quickshell/mi-shell/mi-shell.install"
-
-  # Optional: Also remove the .git directory if it was copied by the 'cp -r'
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/.git"
 }
