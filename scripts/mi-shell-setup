@@ -22,15 +22,13 @@ echo "🚀 Starting mi-shell user environment configuration..."
 if [ ! -f "$NIRI_CONFIG" ]; then
     echo "ℹ️ No existing Niri configuration found at $NIRI_CONFIG"
 
-    if [ -f "/usr/share/doc/niri/config.kdl" ]; then
-        echo "📋 Seeding official system Niri defaults to prevent a blank desktop..."
+    # FIX: Changed config.kdl to default-config.kdl
+    if [ -f "/usr/share/doc/niri/default-config.kdl" ]; then
+        echo "📋 Seeding official system Niri defaults..."
         mkdir -p "$NIRI_DIR"
-        cp /usr/share/doc/niri/config.kdl "$NIRI_CONFIG"
+        cp /usr/share/doc/niri/default-config.kdl "$NIRI_CONFIG"
     else
         echo "❌ Error: Could not locate a default Niri template on your system."
-        echo "   To complete the installation safely without missing system defaults:"
-        echo "   1. Launch Niri once to generate your baseline user configuration."
-        echo "   2. Run 'mi-shell-setup' again."
         exit 1
     fi
 fi
@@ -54,5 +52,5 @@ else
     echo -e "\n// Added by mi-shell package setup\n$INCLUDE_STR" >> "$NIRI_CONFIG"
     echo "✅ Done! mi-shell is now hooked into Niri."
 fi
-
+mkdir -p "$HOME/Pictures/Wallpapers"
 echo "🎉 Setup complete!"
