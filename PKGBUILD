@@ -34,7 +34,7 @@ optdepends=(
   'librewolf: for the browser shortcuts'
   'playerctl: recommended for better MPRIS control'
   'vdirsyncer: sync local khal calendar with Google/CalDAV'
-  'pcmanfm: Recommended file manager'
+  'dolphin: Recommended file manager'
   'kate: Recommended text editor'
   'mpv: Recommended media player'
   'qarma: For notifications'
