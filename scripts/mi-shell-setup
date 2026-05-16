@@ -1,8 +1,18 @@
 #!/bin/bash
 set -e
 
-# Define paths
-NIRI_CONFIG="$HOME/.config/niri/config.kdl"
+# --- VARIABLE DEFINITIONS ---
+# Define directories
+NIRI_DIR="$HOME/.config/niri"
+
+# Define target file paths
+NIRI_CONFIG="$NIRI_DIR/config.kdl"
+MISHELL_KDL_TARGET="$NIRI_DIR/mi-shell.kdl"
+
+# Define source system templates
+MISHELL_KDL_TEMPLATE="/usr/share/mi-shell/mi-shell.kdl.example"
+
+# Define injection pattern string
 INCLUDE_STR='include "mi-shell.kdl"'
 PATTERN="^[[:space:]]*include[[:space:]]+['\"]mi-shell\.kdl['\"]"
 
@@ -14,9 +24,7 @@ if [ ! -f "$NIRI_CONFIG" ]; then
 
     if [ -f "/usr/share/doc/niri/config.kdl" ]; then
         echo "📋 Seeding official system Niri defaults to prevent a blank desktop..."
-        # Create directory just in case
-        mkdir -p "$(dirname "$NIRI_CONFIG")"
-        # Copy the safe, system-default template FIRST
+        mkdir -p "$NIRI_DIR"
         cp /usr/share/doc/niri/config.kdl "$NIRI_CONFIG"
     else
         echo "❌ Error: Could not locate a default Niri template on your system."
@@ -27,13 +35,23 @@ if [ ! -f "$NIRI_CONFIG" ]; then
     fi
 fi
 
-# --- STEP 2: Now that config.kdl definitely exists, safely append the include ---
+# --- STEP 2: Copy the actual mi-shell.kdl file into the Niri directory ---
+if [ -f "$MISHELL_KDL_TEMPLATE" ]; then
+    echo "🗂️ Placing mi-shell.kdl layout rules into $NIRI_DIR..."
+    mkdir -p "$NIRI_DIR"
+    cp "$MISHELL_KDL_TEMPLATE" "$MISHELL_KDL_TARGET"
+else
+    echo "⚠️ Warning: System template not found at $MISHELL_KDL_TEMPLATE."
+    echo "   Skipping mi-shell.kdl file copy. You may need to copy it manually."
+fi
+
+# --- STEP 3: Now that config.kdl definitely exists, safely append the include ---
 if grep -E -q "$PATTERN" "$NIRI_CONFIG"; then
     echo "✔️ mi-shell inclusion is already present in your Niri configuration (or handled manually)."
 else
     echo "⚡ Injecting mi-shell inclusion into Niri config..."
-    # Always append using standard canonical formatting
-    echo -e "\n# Added by mi-shell package setup\n$INCLUDE_STR" >> "$NIRI_CONFIG"
+    # Always append using standard canonical formatting (with valid KDL '//' comments)
+    echo -e "\n// Added by mi-shell package setup\n$INCLUDE_STR" >> "$NIRI_CONFIG"
     echo "✅ Done! mi-shell is now hooked into Niri."
 fi
 
