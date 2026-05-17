@@ -7,7 +7,7 @@ fi
 TARGET_PROCESSES=("musikcube" "wine" "wineserver" "andi2pc.py"
     "autobikecopy.sh" "bbc.sh" "cloud_backup.sh" "backintime"
     "upload_videos_fixed.sh" "usb_backup.sh" "up2date.sh"
-    "mi-caffeine-flag")
+    "mi-caffeine-flag.sh")
 CHECK_INTERVAL=15
 # ---------------------
 

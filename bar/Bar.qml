@@ -182,7 +182,7 @@ Scope {
           root.sysDetails = "Distro: " + lines[0] + "\n" +
           "Kernel: " + lines[1] + "\n" +
           "Uptime: " + lines[2] + "\n" +
-          "RAM    : " + lines[3] + "\n" +
+          "RAM   : " + lines[3] + "\n" +
           "Disk /: " + lines[4]  + "\n" +
           "Home  : " + lines[5];
         }
