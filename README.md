@@ -97,10 +97,23 @@ These will be installed automatically if you use the `PKGBUILD`:
 
 ## Installation
 
-To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will automatically install all necessary dependencies (niri, swww, etc.).
+To install **mi-shell** on Arch Linux, use the provided `PKGBUILD`. This will automatically install all necessary dependencies (niri, quickshell-git, etc.).
 
-1. Clone this repository.
-2. Run `makepkg -si`.
+1. Install quickshell-git
+
+2. Clone this repository, cd into it and then run
+
+   ```makepkg -si```
+
+Cachyos users need to clone the repository and then cd into it, from there run
+
+```paru -Bi . ```
+
+Endeavouros users need to clone the repository and then cd into it, then run
+
+```yay -Bi . ```
+
+All users have to run the mi-shell-setup after installation, this will check or create the niri files and then setup your mi-shell files. If you don't have a wallpaper directory this is also created for you. 
 
 ### Niri Configuration
 To start the shell and its helper services automatically, a new file is created in  `~/.config/niri/mi-shell.kdl`:
@@ -124,9 +137,7 @@ binds {
 
 It also adds a line into ~/.config/niri/config.kdl
 
-```// include "mi-shell.kdl"```
-
-You just have to uncomment this and restart niri. 
+```include "mi-shell.kdl"```
 
 The optional binds are also in the file but please check they do not clash with any existing ones. 
 
