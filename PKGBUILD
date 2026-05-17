@@ -75,7 +75,7 @@ package() {
 
 # 3. Install system assets & example config
   install -Dm644 "${_src}/mi-shell.kdl" "${pkgdir}/usr/share/mi-shell/mi-shell.kdl.example"
-  install -Dm644 "${_src}/mi-wall.jpg" "${pkgdir}/usr/share/mi-shell/mi-wall.jpg"
+  install -Dm644 "${_src}/mi-wall.png" "${pkgdir}/usr/share/mi-shell/mi-wall.png"
 
   # 4. Cleanup (Keep the system files lean)
   rm -rf "${pkgdir}/etc/xdg/quickshell/mi-shell/scripts"

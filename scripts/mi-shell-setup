@@ -26,7 +26,7 @@ else
 fi
 
 # Looking directly in the root folder now
-DEFAULT_WALLPAPER_SRC="$MI_SHELL_ROOT/mi-wall.jpg"
+DEFAULT_WALLPAPER_SRC="$MI_SHELL_ROOT/mi-wall.png"
 
 # Define injection pattern string
 INCLUDE_STR='include "mi-shell.kdl"'
@@ -70,11 +70,11 @@ shopt -u nullglob # Turn off nullglob to restore standard shell behavior
 if [ ${#files[@]} -eq 0 ]; then
     if [ -f "$DEFAULT_WALLPAPER_SRC" ]; then
         echo "[Wallpaper] First-time setup: Seeding default wallpaper to $WALLPAPER_DIR..."
-        cp "$DEFAULT_WALLPAPER_SRC" "$WALLPAPER_DIR/mi-wall.jpg"
-        chmod 644 "$WALLPAPER_DIR/mi-wall.jpg" # Ensure standard user read/write permissions
+        cp "$DEFAULT_WALLPAPER_SRC" "$WALLPAPER_DIR/mi-wall.png"
+        chmod 644 "$WALLPAPER_DIR/mi-wall.png" # Ensure standard user read/write permissions
 
         echo "[Wallpaper] Creating local wallpaper.conf pointing to your new file..."
-        echo "$WALLPAPER_DIR/mi-wall.jpg" > "$WALLPAPER_CONF"
+        echo "$WALLPAPER_DIR/mi-wall.png" > "$WALLPAPER_CONF"
     else
         echo "Warning: System wallpaper asset not found at $DEFAULT_WALLPAPER_SRC"
     fi
