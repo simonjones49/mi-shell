@@ -6,11 +6,13 @@ set -e
 NIRI_DIR="$HOME/.config/niri"
 WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 MI_USER_DIR="$HOME/.config/quickshell/mi-shell"
+KITTY_DIR="$HOME/.config/kitty"
 
 # Define target file paths
 NIRI_CONFIG="$NIRI_DIR/config.kdl"
 MISHELL_KDL_TARGET="$NIRI_DIR/mi-shell.kdl"
 WALLPAPER_CONF="$MI_USER_DIR/wallpaper.conf"
+KITTY_CONFIG="$KITTY_DIR/kitty.conf"
 
 # --- SYSTEM / ASSET DETECTION ---
 MISHELL_KDL_TEMPLATE="/usr/share/mi-shell/mi-shell.kdl.example"
@@ -98,7 +100,27 @@ else
     echo "[Niri] Success: mi-shell is now hooked into Niri."
 fi
 
-# --- STEP 4: List optional dependencies from PKGBUILD ---
+# --- STEP 4: Handle Kitty Terminal Theme Hook ---
+# Ensure Kitty configuration directory exists
+mkdir -p "$KITTY_DIR"
+# Force-create the file if it doesn't exist so grep doesn't throw errors
+touch "$KITTY_CONFIG"
+
+if grep -q "# BEGIN_KITTY_THEME" "$KITTY_CONFIG" 2>/dev/null; then
+    echo "[Kitty] mi-shell theme hook is already present in your kitty.conf."
+else
+    echo "[Kitty] Injecting mi-shell theme hook into kitty.conf..."
+    cat << 'EOF' >> "$KITTY_CONFIG"
+
+# BEGIN_KITTY_THEME
+# mi-shell
+include theme-colours.conf
+# END_KITTY_THEME
+EOF
+    echo "[Kitty] Success: Theme hook appended."
+fi
+
+# --- STEP 5: List optional dependencies from PKGBUILD ---
 echo ""
 
 # Locate the PKGBUILD (assuming it's in the same directory as the script or project root)
@@ -121,7 +143,7 @@ if [ -f "$PKGBUILD_PATH" ]; then
     echo ""
 fi
 
-# --- STEP 5: Launch Guidance ---
+# --- STEP 6: Launch Guidance ---
 echo "=== Quick Start Tip ==="
 echo "To launch your new desktop environment correctly with all system services,"
 echo "make sure to start your compositor using: niri-session"
