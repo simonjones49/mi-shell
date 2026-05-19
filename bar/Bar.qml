@@ -114,7 +114,8 @@ Scope {
   property var pinnedApps: [
     { id: "librewolf", icon: "librewolf", exec: "librewolf.sh" },
     { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
-    { id: "org.kde.kate", icon: "kate", exec: "kate" }
+    { id: "org.kde.kate", icon: "kate", exec: "kate" },
+{ id: "mi-email", icon: "email", exec: "mi-email" }
   ]
 
   function resolveIcon(appId) {
