@@ -122,7 +122,7 @@ Scope {
     if (!appId) return "application-x-executable";
     let id = appId.toLowerCase();
     const iconMap = {
-      "kitty": "terminal",
+      "kitty": "utilities-terminal",
       "librewolf": "browser",
       "org.kde.kate": "kate",
       "nautilus": "system-file-manager",
