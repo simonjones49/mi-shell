@@ -69,7 +69,6 @@ package() {
   install -Dm755 "${_src}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -Dm755 "${_src}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
   install -Dm755 "${_src}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
-  install -Dm755 "${_src}/scripts/mi-email" "${pkgdir}/usr/bin/mi-email"
 
   # Add setup script directly from your repository's scripts folder
   install -Dm755 "${_src}/scripts/mi-shell-setup" "${pkgdir}/usr/bin/mi-shell-setup"
