@@ -89,7 +89,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 
 * bluetui: for the Bluetooth manager UI
 * nmtui: for the Network manager UI
-* pulemixer: a TUI sound manager UI
+* pulsemixer: a TUI sound manager UI
 * aerc: a TUI email client
 * librewolf: for the browser shortcuts
 * playerctl: recommended for better MPRIS control
