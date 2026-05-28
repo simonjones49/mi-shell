@@ -31,6 +31,7 @@ depends=(
 optdepends=(
   'bluetui: for the Bluetooth manager UI'
   'nmtui: for the Network manager UI'
+  'pulsemixer: for the Sound manager UI'
   'aerc: a TUI email client'
   'librewolf: for the browser shortcuts'
   'playerctl: recommended for better MPRIS control'

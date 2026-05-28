@@ -1,6 +1,10 @@
 # Welcome to mi-shell
 This is my version of a quickshell bar and tools.
 
+
+
+![The Desktop view](assets/desktop.png)
+
 It is vertical and for now there is no settings panel, everything is done via the config files. This may change over time but I am just setting this up for me. 
 
 This started off as project to use something instead of the legacy Noctalia.
@@ -23,7 +27,7 @@ The pop out calendar links directly to khal.
 
 ![System information](assets/sys-info.png)
 
-The Control panel has easy access to networks, vpns, bluetooth, wallpaper, themes and session menu.
+The Control panel has easy access to networks, vpns, bluetooth, wallpaper, themes, sound and session menu.
 
 ![Control Centre](assets/controlcentre.png)
 
@@ -85,6 +89,7 @@ These will be installed automatically if you use the `PKGBUILD`:
 
 * bluetui: for the Bluetooth manager UI
 * nmtui: for the Network manager UI
+* pulemixer: a TUI sound manager UI
 * aerc: a TUI email client
 * librewolf: for the browser shortcuts
 * playerctl: recommended for better MPRIS control
