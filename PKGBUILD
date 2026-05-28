@@ -55,7 +55,7 @@ prepare() {
 
   # Remove the .sh extension from the Bar.qml file for the system installation
   # We use the backslash to escape the dot so it's a literal match
-  sed -i 's/exec: "librewolf\.sh"/exec: "librewolf"/g' bar/Bar.qml
+  # sed -i 's/exec: "librewolf\.sh"/exec: "librewolf"/g' bar/Bar.qml
 }
 
 package() {

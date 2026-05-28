@@ -8,36 +8,40 @@ Item {
 
   Process {
     id: lsblkProc
-      command: ["lsblk", "-Jpno", "NAME,LABEL,MOUNTPOINT,SIZE,HOTPLUG"]
-      stdout: StdioCollector {
-        onStreamFinished: {
-          try {
-            let data = JSON.parse(text.trim());
-            let flatDrives = [];
+    command: ["lsblk", "-Jpno", "NAME,LABEL,MOUNTPOINT,SIZE,HOTPLUG"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          let data = JSON.parse(text.trim());
+          let flatDrives = [];
 
-            data.blockdevices.forEach(dev => {
-              // FIX: Use 'hotplug' instead of 'rm' to catch external SSDs
-              // lsblk JSON can return "1" (string) or true (boolean)
-              if (dev.hotplug === true || dev.hotplug === "1") {
+          // Helper function to extract partitions recursively
+          function processDevice(dev, isHotplugParent = false) {
+            // Inherit hotplug status from parent if necessary
+            let isHotplug = dev.hotplug === true || dev.hotplug === "1" || isHotplugParent;
 
-                if (dev.children) {
-                  // Add the partitions (e.g., sdb1, sdb2)
-                  dev.children.forEach(child => {
-                    // Carry over the name if the child name is shortened
-                    flatDrives.push(child);
-                  });
-                } else {
-                  // No partitions, add the raw device (e.g., sda)
-                  flatDrives.push(dev);
-                }
-              }
-            });
-            usbLogic.driveList = flatDrives;
-          } catch(e) {
-            console.log("USB Logic Error: " + e);
-            usbLogic.driveList = [];
+            if (dev.children && dev.children.length > 0) {
+              dev.children.forEach(child => {
+                processDevice(child, isHotplug);
+              });
+            } else if (isHotplug) {
+              // This is a leaf node (either a partition or a mapped volume)
+              flatDrives.push(dev);
+            }
           }
+
+          if (data && data.blockdevices) {
+            data.blockdevices.forEach(dev => {
+              processDevice(dev);
+            });
+          }
+
+          usbLogic.driveList = flatDrives;
+        } catch(e) {
+          console.log("USB Logic Error: " + e);
+          usbLogic.driveList = [];
         }
+      }
     }
   }
 

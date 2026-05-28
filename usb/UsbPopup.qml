@@ -88,7 +88,6 @@ PanelWindow {
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
               p.command = ["udisksctl", action, "-b", devName];
               p.running = true;
-              //usbPopup.visible = false;
             }
           }
 
@@ -108,7 +107,7 @@ PanelWindow {
               Layout.fillWidth: true
               spacing: 2
               Text {
-                text: (modelData.label || modelData.name) + " (" + modelData.size + ")"
+                text: (modelData.label || modelData.name.split('/').pop()) + " (" + modelData.size + ")"
                 color: usbPopup.theme.textPrimary
                 font.bold: true
                 elide: Text.ElideRight
@@ -121,7 +120,7 @@ PanelWindow {
               }
             }
 
-            // --- NEW: Open Folder Button ---
+            // --- Open Folder Button ---
             Rectangle {
               visible: !!modelData.mountpoint
               Layout.preferredWidth: 32
@@ -133,7 +132,7 @@ PanelWindow {
 
               Text {
                 anchors.centerIn: parent
-                text: "󰝰" // Folder Open Icon
+                text: "󰝰"
                 font.family: "Hack Nerd Font"
                 font.pixelSize: 16
                 color: usbPopup.theme.accentPrimary
@@ -143,7 +142,6 @@ PanelWindow {
                 id: openMouse
                 anchors.fill: parent
                 hoverEnabled: true
-                // propagateComposedEvents: false ensures clicking this doesn't trigger the unmount logic
                 onClicked: (mouse) => {
                   mouse.accepted = true;
                   let openProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
@@ -154,10 +152,11 @@ PanelWindow {
               }
             }
 
-            // Power Off Button
+            // --- Power Off / Secure Lock Button ---
             Rectangle {
               id: powerBtn
-              visible: !!modelData.mountpoint
+              // Keep button visible even if unmounted, so you can still power off or lock a hanging drive
+              visible: true
               Layout.preferredWidth: 32
               Layout.preferredHeight: 32
               radius: 16
@@ -176,20 +175,25 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 onClicked: (mouse) => {
-                  mouse.accepted = true; // Stop event from hitting driveMouse
+                  mouse.accepted = true;
                   let devName = modelData.name.startsWith("/dev/") ? modelData.name : "/dev/" + modelData.name;
-                  let unmountProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
-                  unmountProc.command = ["udisksctl", "unmount", "-b", devName];
 
-                  unmountProc.runningChanged.connect(function() {
-                    if (!unmountProc.running) {
-                      let powerProc = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
-                      powerProc.command = ["udisksctl", "power-off", "-b", devName];
-                      powerProc.running = true;
-                    }
-                  });
+                  // Run a clean inline teardown script via sh
+                  let powerTeardown = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
+                  powerTeardown.command = [
+                    "sh", "-c",
+                    `if udisksctl info -b "${devName}" | grep -q "MountPoints:[[:space:]]*[^[:space:]]"; then ` +
+                    `  udisksctl unmount -b "${devName}"; ` +
+                    `fi; ` +
+                    `PARENT=$(crypto_backing=\$(udisksctl info -b "${devName}" | grep "CryptoBackingDevice:" | awk '{print $2}'); echo \${crypto_backing:-"${devName}"}); ` +
+                    `if [ "$PARENT" != "${devName}" ]; then ` +
+                    `  udisksctl lock -b "$PARENT"; ` +
+                    `fi; ` +
+                    `RAW_DISK=$(echo "$PARENT" | sed 's/[0-9]\\+$//'); ` +
+                    `udisksctl power-off -b "$RAW_DISK"`
+                  ];
 
-                  unmountProc.running = true;
+                  powerTeardown.running = true;
                   usbPopup.visible = false;
                 }
               }
