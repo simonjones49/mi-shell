@@ -81,13 +81,35 @@ PanelWindow {
           MouseArea {
             id: driveMouse
             anchors.fill: parent
-            hoverEnabled: true
+            hoverEnabled: !modelData.encrypted || !!modelData.mountpoint
             onClicked: {
-              let action = modelData.mountpoint ? "unmount" : "mount";
-              let devName = modelData.name.startsWith("/dev/") ? modelData.name : "/dev/" + modelData.name;
+              let isLuks = modelData.name.startsWith("luks-");
+              let devName = modelData.name.startsWith("/dev/") ? modelData.name :
+              (isLuks ? "/dev/mapper/" + modelData.name : "/dev/" + modelData.name);
+
               let p = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
-              p.command = ["udisksctl", action, "-b", devName];
-              p.running = true;
+
+              if (modelData.mountpoint) {
+                p.command = [
+                  "sh", "-c",
+                  `DEV="${devName}"; ` +
+                  // Extracts the raw parent name (e.g., sdb1) directly from the UDisks2 object path
+                  `BACKING=$(udisksctl info -b "$DEV" | grep "CryptoBackingDevice:" | cut -d"'" -f2 | sed 's|.*/||'); ` +
+                  `udisksctl unmount -b "$DEV" && ` +
+                  `if [ -n "$BACKING" ]; then ` +
+                  `  sleep 1; ` +
+                  `  udisksctl lock -b "/dev/$BACKING"; ` +
+                  `fi`
+                ];
+                p.running = true;
+              } else if (modelData.encrypted) {
+                // Encrypted & Locked -> Do nothing. User unlocks manually.
+                return;
+              } else {
+                // Normal unmounted drive -> Standard Mount
+                p.command = ["udisksctl", "mount", "-b", devName];
+                p.running = true;
+              }
             }
           }
 
@@ -97,10 +119,10 @@ PanelWindow {
             spacing: 8
 
             Text {
-              text: modelData.mountpoint ? "󱐩" : "󱊞"
+              text: modelData.mountpoint ? "󱐩" : (modelData.encrypted ? "󰌾" : "󱊞")
               font.family: "Hack Nerd Font"
               font.pixelSize: 14
-              color: modelData.mountpoint ? usbPopup.theme.accentPrimary : usbPopup.theme.textPrimary
+              color: modelData.mountpoint ? usbPopup.theme.accentPrimary : (modelData.encrypted ? "#fabd2f" : usbPopup.theme.textPrimary)
             }
 
             ColumnLayout {
@@ -113,8 +135,10 @@ PanelWindow {
                 elide: Text.ElideRight
               }
               Text {
-                text: modelData.mountpoint ? "Click to Unmount" : "Click to Mount"
-                color: usbPopup.theme.accentPrimary
+                text: modelData.mountpoint
+                ? "Click to Unmount & Lock"
+                : (modelData.encrypted ? "Encrypted • Please Unlock" : "Click to Mount")
+                color: (modelData.encrypted && !modelData.mountpoint) ? "#fabd2f" : usbPopup.theme.accentPrimary
                 font.pixelSize: 10
                 opacity: 0.8
               }
@@ -155,7 +179,6 @@ PanelWindow {
             // --- Power Off / Secure Lock Button ---
             Rectangle {
               id: powerBtn
-              // Keep button visible even if unmounted, so you can still power off or lock a hanging drive
               visible: true
               Layout.preferredWidth: 32
               Layout.preferredHeight: 32
@@ -176,21 +199,28 @@ PanelWindow {
                 hoverEnabled: true
                 onClicked: (mouse) => {
                   mouse.accepted = true;
-                  let devName = modelData.name.startsWith("/dev/") ? modelData.name : "/dev/" + modelData.name;
+                  let isLuks = modelData.name.startsWith("luks-");
+                  let devName = modelData.name.startsWith("/dev/") ? modelData.name :
+                  (isLuks ? "/dev/mapper/" + modelData.name : "/dev/" + modelData.name);
 
-                  // Run a clean inline teardown script via sh
                   let powerTeardown = Qt.createQmlObject('import Quickshell.Io; Process {}', usbPopup);
                   powerTeardown.command = [
                     "sh", "-c",
-                    `if udisksctl info -b "${devName}" | grep -q "MountPoints:[[:space:]]*[^[:space:]]"; then ` +
-                    `  udisksctl unmount -b "${devName}"; ` +
+                    `DEV="${devName}"; ` +
+                    `BACKING=$(udisksctl info -b "$DEV" | grep "CryptoBackingDevice:" | cut -d"'" -f2 | sed 's|.*/||'); ` +
+                    `if udisksctl info -b "$DEV" | grep -q "MountPoints:[[:space:]]*[^[:space:]]"; then ` +
+                    `  udisksctl unmount -b "$DEV"; ` +
+                    `  sleep 1; ` +
                     `fi; ` +
-                    `PARENT=$(crypto_backing=\$(udisksctl info -b "${devName}" | grep "CryptoBackingDevice:" | awk '{print $2}'); echo \${crypto_backing:-"${devName}"}); ` +
-                    `if [ "$PARENT" != "${devName}" ]; then ` +
-                    `  udisksctl lock -b "$PARENT"; ` +
+                    `if [ -n "$BACKING" ]; then ` +
+                    `  udisksctl lock -b "/dev/$BACKING"; ` +
+                    `  RAW_DISK=$(echo "$BACKING" | sed 's/[0-9]\\+$//'); ` +
+                    `else ` +
+                    `  RAW_DISK=$(echo "$DEV" | sed 's|.*/||' | sed 's/[0-9]\\+$//'); ` +
                     `fi; ` +
-                    `RAW_DISK=$(echo "$PARENT" | sed 's/[0-9]\\+$//'); ` +
-                    `udisksctl power-off -b "$RAW_DISK"`
+                    `if [ -n "$RAW_DISK" ]; then ` +
+                    `  udisksctl power-off -b "/dev/$RAW_DISK"; ` +
+                    `fi`
                   ];
 
                   powerTeardown.running = true;

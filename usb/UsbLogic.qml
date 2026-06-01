@@ -8,7 +8,8 @@ Item {
 
   Process {
     id: lsblkProc
-    command: ["lsblk", "-Jpno", "NAME,LABEL,MOUNTPOINT,SIZE,HOTPLUG"]
+    // Added FSTYPE to the columns list
+    command: ["lsblk", "-Jpno", "NAME,LABEL,MOUNTPOINT,SIZE,HOTPLUG,FSTYPE"]
     stdout: StdioCollector {
       onStreamFinished: {
         try {
@@ -25,7 +26,8 @@ Item {
                 processDevice(child, isHotplug);
               });
             } else if (isHotplug) {
-              // This is a leaf node (either a partition or a mapped volume)
+              // Check if this leaf node is a locked LUKS container
+              dev.encrypted = (dev.fstype === "crypto_LUKS");
               flatDrives.push(dev);
             }
           }
