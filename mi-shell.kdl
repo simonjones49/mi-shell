@@ -3,6 +3,8 @@ spawn-at-startup "mi-power"
 spawn-at-startup "nm-applet"
 spawn-at-startup "quickshell" "-c" "mi-shell"
 spawn-at-startup "sh" "-c" "swaybg -i $(cat ~/.config/quickshell/mi-shell/wallpaper.conf) -m fill"
+spawn-at-startup "dbus-update-activation-environment" "--all"
+spawn-at-startup "systemctl" "--user" "import-environment" "GTK_THEME" "ADW_DISABLE_PORTAL"
 // --- Suggested Keybindings ---
 binds {
     // Uncomment these to enable mi-shell shortcuts:

@@ -1037,6 +1037,23 @@
     "accentRed": "#df4f4b"
   },
   {
+    "name": "Datcord",
+    "family": "MonkeyType",
+    "bgBase": "#313338",
+    "bgSurface": "#2b2d31",
+    "bgHover": "#2e3034",
+    "bgSelected": "#373a53",
+    "bgBorder": "#383a40",
+    "textPrimary": "#dcdee3",
+    "textSecondary": "#565861",
+    "textMuted": "#474951",
+    "accentPrimary": "#6bb9ea",
+    "accentCyan": "#eaaf5a",
+    "accentGreen": "#5aea8a",
+    "accentOrange": "#eaa25a",
+    "accentRed": "#df4f4b"
+  },
+  {
     "name": "Dmg",
     "family": "MonkeyType",
     "bgBase": "#dadbdc",

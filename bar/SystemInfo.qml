@@ -16,6 +16,7 @@ Singleton {
   property string batteryIcon: "󰂎"
   property bool batteryCharging: false
   property string temperature: "0°C"
+  property string cpuTemp: "0"
 
   // CPU Usage
   Process {
@@ -92,18 +93,18 @@ Singleton {
     }
   }
 
-  // ... inside SystemInfo.qml
-
-  // Temperature
   Process {
     id: tempProc
-    // Improved command to be more resilient across different CPU types
-    command: ["sh", "-c", "sensors 2>/dev/null | grep -m1 -E 'Package id 0|Tctl|Core 0|temp1' | awk '{print $2}' | tr -d '+ ' || echo 'N/A'"]
+    // FIX: Using int($2)\"°C\" to format it perfectly to a whole number with the unit symbol
+    command: ["sh", "-c", "sensors 2>/dev/null | grep -m1 -E 'Package id 0|Tctl|Core 0|temp1' | awk '{print int($2)\"°C\"}' || echo 'N/A'"]
     stdout: StdioCollector {
       onStreamFinished: {
         let result = text.trim();
-        // Ensure we only take the first part if sensors returns multiple values
-        root.temperature = result ? result.split('\n')[0] : "N/A";
+        if (result && result !== "N/A") {
+          root.cpuTemp = result.split('\n')[0]; // Direct assignment of the clean string
+        } else {
+          root.cpuTemp = "N/A";
+        }
       }
     }
   }

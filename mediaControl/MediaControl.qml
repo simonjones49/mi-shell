@@ -18,8 +18,106 @@ Scope {
   }
 
   property bool popupVisible: false
-  // Added a local property to force UI updates
   property real currentPos: activePlayer ? activePlayer.position : 0
+
+  // --- VIDEO ART WORKAROUND EXTENSION ---
+  property string generatedArtUrl: ""
+  property string lastProcessedUrl: ""
+  property bool extractionFailed: false
+  property var ffmpegArgs: []
+  property bool toggleCachePath: false // Alternates files to cleanly break Qt's strict local image cache
+
+  onActivePlayerChanged: checkAndExtractArt()
+  Connections {
+    target: root.activePlayer ? root.activePlayer : null
+    // Explicitly listen to metadata changes where xesam URL structures are packaged
+    function onMetadataChanged() { root.checkAndExtractArt(); }
+    function onTrackArtUrlChanged() { root.checkAndExtractArt(); }
+  }
+
+  function checkAndExtractArt() {
+    if (!root.activePlayer) {
+      root.generatedArtUrl = "";
+      root.lastProcessedUrl = "";
+      return;
+    }
+
+    // 1. If native MPRIS cover art exists (standard audio albums), use it directly
+    if (root.activePlayer.trackArtUrl && root.activePlayer.trackArtUrl !== "") {
+      root.extractionFailed = false;
+      root.generatedArtUrl = root.activePlayer.trackArtUrl;
+      return;
+    }
+
+    // FIX: Read from metadata map directly
+    const currentUrl = root.activePlayer.metadata ? (root.activePlayer.metadata["xesam:url"] ?? "") : "";
+    if (currentUrl === "" || currentUrl === root.lastProcessedUrl) return;
+    root.lastProcessedUrl = currentUrl;
+
+    console.log("mi-shell-media: Processing target URL -> " + currentUrl);
+
+    // 2. Bonus: Handle direct YouTube stream targets without calling ffmpeg
+    if (currentUrl.includes("youtube.com/watch") || currentUrl.includes("youtu.be/")) {
+      root.extractionFailed = false;
+      let videoId = "";
+      if (currentUrl.includes("youtube.com/watch")) {
+        let match = currentUrl.match(/[?&]v=([\w-]{11})/);
+        if (match) videoId = match[1];
+      } else {
+        let match = currentUrl.match(/youtu\.be\/([\w-]{11})/);
+        if (match) videoId = match[1];
+      }
+
+      if (videoId !== "") {
+        root.generatedArtUrl = "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";
+        return;
+      }
+    }
+
+    // 3. Handle local media container parsing via backend ffmpeg extraction
+    if (currentUrl.startsWith("file://")) {
+      root.extractionFailed = false;
+
+      let cleanPath = decodeURIComponent(currentUrl.replace(/^file:\/\//, ""));
+      let targetFile = root.toggleCachePath ? "/tmp/quickshell-thumb-b.jpg" : "/tmp/quickshell-thumb-a.jpg";
+
+      root.ffmpegArgs = [
+        "ffmpeg", "-y",
+        "-ss", "00:00:10", // Skips forward 2s to minimize landing on black screen transitions
+        "-i", cleanPath,
+        "-an", "-vframes", "1", "-q:v", "3",
+        targetFile
+      ];
+
+      executionTrigger.start();
+    } else {
+      root.generatedArtUrl = "";
+    }
+  }
+
+  Timer {
+    id: executionTrigger
+    interval: 10
+    repeat: false
+    onTriggered: {
+      if (artExtractor.running) artExtractor.running = false;
+      artExtractor.running = true;
+    }
+  }
+
+  Process {
+    id: artExtractor
+    command: root.ffmpegArgs
+
+    onRunningChanged: {
+      if (!running) {
+        // Expose new image location safely using standard absolute references
+        root.generatedArtUrl = "file://" + (root.toggleCachePath ? "/tmp/quickshell-thumb-b.jpg" : "/tmp/quickshell-thumb-a.jpg");
+        root.toggleCachePath = !root.toggleCachePath;
+      }
+    }
+  }
+  // --- END EXTENSION ---
 
   IpcHandler {
     target: "media"
@@ -66,13 +164,14 @@ Scope {
         border.color: root.theme.bgBorder
         border.width: 1
         radius: 12
+
         Item {
           anchors.top: parent.top
           anchors.right: parent.right
           anchors.margins: 6
           width: 24
           height: 24
-          z: 100 // Keeps it above the album art and layout
+          z: 100
 
           Text {
             anchors.centerIn: parent
@@ -87,15 +186,16 @@ Scope {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: root.popupVisible = false // Directly toggles your root property
+            onClicked: root.popupVisible = false
           }
         }
+
         ColumnLayout {
           id: contentCol
           anchors.left: parent.left; anchors.right: parent.right; anchors.top: parent.top
           anchors.margins: 20; spacing: 18
 
-          // 1. ALBUM ART
+          // 1. ALBUM ART CONTAINER
           Rectangle {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 300; Layout.preferredHeight: 300
@@ -103,18 +203,25 @@ Scope {
 
             Text {
               anchors.centerIn: parent
-              text: "󰎆"; color: root.theme.textMuted; font.pixelSize: 80; font.family: "Hack Nerd Font"
+              text: root.extractionFailed ? "󰈡" : "󰎆"
+              color: root.theme.textMuted; font.pixelSize: 80; font.family: "Hack Nerd Font"
               visible: albumArtImage.status !== Image.Ready
             }
 
             Image {
               id: albumArtImage
               anchors.fill: parent
-              source: root.activePlayer?.trackArtUrl ?? ""
+              source: root.generatedArtUrl
               fillMode: Image.PreserveAspectCrop
               asynchronous: true
-              opacity: status === Image.Ready ? 1 : 0
+              opacity: (status === Image.Ready && !root.extractionFailed) ? 1 : 0
               Behavior on opacity { NumberAnimation { duration: 200 } }
+
+              onStatusChanged: {
+                if (status === Image.Error) {
+                  root.extractionFailed = true;
+                }
+              }
             }
           }
 
@@ -133,7 +240,7 @@ Scope {
             }
           }
 
-          // 3. PROGRESS (Revised Logic)
+          // 3. PROGRESS
           ColumnLayout {
             Layout.fillWidth: true; spacing: 6
             visible: root.activePlayer !== null && root.activePlayer.length > 0
@@ -141,7 +248,6 @@ Scope {
               id: progressBg
               Layout.fillWidth: true; height: 6; radius: 3; color: root.theme.bgSurface
               Rectangle {
-                // Using currentPos for reactive updates
                 width: (root.activePlayer && root.activePlayer.length > 0)
                 ? parent.width * (root.currentPos / root.activePlayer.length)
                 : 0
@@ -153,7 +259,7 @@ Scope {
                   if (root.activePlayer && root.activePlayer.length > 0) {
                     let newPos = (mouse.x / width) * root.activePlayer.length;
                     root.activePlayer.position = newPos;
-                    root.currentPos = newPos; // Instant visual feedback
+                    root.currentPos = newPos;
                   }
                 }
               }

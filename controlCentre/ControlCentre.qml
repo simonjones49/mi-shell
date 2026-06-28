@@ -25,6 +25,19 @@ PanelWindow {
     }
   }
 
+  property string versionString: "Loading..."
+
+  Process {
+    id: versionProc
+    command: ["sh", "-c", "git -C ~/Documents/Git/home-config describe --tags --always"]
+    running: true
+    stdout: StdioCollector {
+      onStreamFinished: {
+        versionString = text.trim();
+      }
+    }
+  }
+
   property var player: {
     const players = Mpris.players.values;
     if (!players || players.length === 0) return null;
@@ -128,15 +141,24 @@ PanelWindow {
       anchors.fill: parent
       anchors.margins: 16
       spacing: 15
+      Row {
+        spacing: 10 // Adjust this for the space between the title and version
 
-      Text {
-        text: "󰄄  Control Centre"
-        font.family: "Hack Nerd Font"
-        font.pixelSize: 14
-        font.bold: true
-        color: controlCentre.theme.textPrimary
+        Text {
+          text: "󰄄  Control Centre"
+          font.family: "Hack Nerd Font"
+          font.pixelSize: 14
+          font.bold: true
+          color: controlCentre.theme.textPrimary
+        }
+
+        Text {
+          text: "Build: " + versionString
+          color: theme.textPrimary
+          font.pixelSize: 10
+          anchors.verticalCenter: parent.verticalCenter // Aligns text centers vertically
+        }
       }
-
       // Connection Rows...
       RowLayout {
         Layout.fillWidth: true
@@ -147,21 +169,21 @@ PanelWindow {
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: wifiMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰖩"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea { id: wifiMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["kitty", "--class", "networkmanager", "-e", "nmtui"]; p.running = true; controlCentre.visible = false; } }
+          MouseArea { id: wifiMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "wifi", "toggle"]; p.running = true; controlCentre.visible = false; } }
         }
         Rectangle {
           id: vpnBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: vpnMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰦝"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea { id: vpnMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["gtk-launch" , "VPN\ Switch.desktop"]; p.running = true; controlCentre.visible = false; } }
+          MouseArea { id: vpnMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "vpn", "toggle"]; p.running = true; controlCentre.visible = false; } }
         }
         Rectangle {
           id: btBtn
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: btMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "󰂯"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea { id: btMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["kitty", "--class", "bluetooth", "-e", "bluetui"]; p.running = true; controlCentre.visible = false; } }
+          MouseArea { id: btMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["blueman-manager"]; p.running = true; controlCentre.visible = false; } }
         }
 
       }
@@ -189,7 +211,7 @@ PanelWindow {
           Layout.preferredWidth: 60; Layout.preferredHeight: 45; radius: 8
           color: sndMouse.containsMouse ? controlCentre.theme.bgSelected : controlCentre.theme.bgSurface
           Text { anchors.centerIn: parent; text: "🕪"; font.family: "Hack Nerd Font"; font.pixelSize: 20; color: controlCentre.theme.accentPrimary; }
-          MouseArea { id: sndMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["kitty", "--class", "networkmanager", "-e", "pulsemixer"]; p.running = true; controlCentre.visible = false; } }
+          MouseArea { id: sndMouse; anchors.fill: parent; hoverEnabled: true; onClicked: { let p = Qt.createQmlObject('import Quickshell.Io; Process {}', controlCentre); p.command = ["pavucontrol"]; p.running = true; controlCentre.visible = false; } }
         }
       }
 

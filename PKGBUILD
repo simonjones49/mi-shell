@@ -1,15 +1,15 @@
 # Maintainer: simonjones49
 pkgname=mi-shell-git
-pkgver=r31.678abcd
+pkgver=r167.8980b6a
 pkgrel=1
 pkgdesc="Vertical Quickshell bar for niri with basic utilities"
 arch=("x86_64")
-url="https://github.com/simonjones49/mi-shell"
+url="https://codeberg.org/simonjones49/mi-shell"
 license=('MIT')
 install=mi-shell.install
 
 depends=(
-  'quickshell-git'
+  # 'quickshell-git'
   'qt6-wayland'
   'qt6-svg'
   'niri'
@@ -26,19 +26,23 @@ depends=(
   'udisks2'
   'ttf-jetbrains-mono-nerd'
   'network-manager-applet'
+  'blueman'
+  'dolphin'
+  'pavucontrol'
+  'qutebrowser'
+  'playerctl'
+  'kate'
+  'mpv'
+  'mpv-mpris'
+  'python-keyring'
+  'xwayland-satellite'
 )
 
 optdepends=(
-  'bluetui: for the Bluetooth manager UI'
-  'nmtui: for the Network manager UI'
-  'pulsemixer: for the Sound manager UI'
   'aerc: a TUI email client'
-  'librewolf: for the browser shortcuts'
-  'playerctl: recommended for better MPRIS control'
   'vdirsyncer: sync local khal calendar with Google/CalDAV'
-  'dolphin: Recommended file manager'
-  'kate: Recommended text editor'
-  'mpv: Recommended media player'
+  'musikcube: Flawless music player with album art MPRIS connection'
+  'keepassxc: A system keyring manager'
 )
 
 makedepends=('git')
@@ -51,12 +55,16 @@ pkgver() {
 }
 
 prepare() {
-  # Note: Use the variable defined in source, which is ${pkgname}
   cd "${srcdir}/${pkgname}"
 
-  # Remove the .sh extension from the Bar.qml file for the system installation
-  # We use the backslash to escape the dot so it's a literal match
-  sed -i 's/exec: "librewolf\.sh"/exec: "librewolf"/g' bar/Bar.qml
+  # 1. Clear the qutebrowser.sh extension
+  sed -i 's/exec: "qutebrowser\.sh"/exec: "qutebrowser"/g' bar/Bar.qml
+
+  # 2. Delete the entire --basedir argument from the original string
+  sed -i 's@--basedir \$HOME/\.local/share/qutebrowser/profiles/main @@g' themeSwitcher/Theme.qml
+
+  # 3. Change the remaining path and drop the extra '/config/' subfolder entirely
+  sed -i 's@\.local/share/qutebrowser/profiles/main/config/@\.config/qutebrowser/@g' themeSwitcher/Theme.qml
 }
 
 package() {
@@ -70,8 +78,6 @@ package() {
   install -Dm755 "${_src}/scripts/mi-power" "${pkgdir}/usr/bin/mi-power"
   install -Dm755 "${_src}/scripts/mi-caffeine" "${pkgdir}/usr/bin/mi-caffeine"
   install -Dm755 "${_src}/scripts/mi-caffeine-flag.sh" "${pkgdir}/usr/bin/mi-caffeine-flag.sh"
-
-  # Add setup script directly from your repository's scripts folder
   install -Dm755 "${_src}/scripts/mi-shell-setup" "${pkgdir}/usr/bin/mi-shell-setup"
 
 # 3. Install system assets & example config

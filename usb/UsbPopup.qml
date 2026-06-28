@@ -93,7 +93,6 @@ PanelWindow {
                 p.command = [
                   "sh", "-c",
                   `DEV="${devName}"; ` +
-                  // Extracts the raw parent name (e.g., sdb1) directly from the UDisks2 object path
                   `BACKING=$(udisksctl info -b "$DEV" | grep "CryptoBackingDevice:" | cut -d"'" -f2 | sed 's|.*/||'); ` +
                   `udisksctl unmount -b "$DEV" && ` +
                   `if [ -n "$BACKING" ]; then ` +
@@ -103,10 +102,8 @@ PanelWindow {
                 ];
                 p.running = true;
               } else if (modelData.encrypted) {
-                // Encrypted & Locked -> Do nothing. User unlocks manually.
                 return;
               } else {
-                // Normal unmounted drive -> Standard Mount
                 p.command = ["udisksctl", "mount", "-b", devName];
                 p.running = true;
               }
@@ -135,8 +132,9 @@ PanelWindow {
                 elide: Text.ElideRight
               }
               Text {
+                // Modified to accurately reflect action based on encryption status
                 text: modelData.mountpoint
-                ? "Click to Unmount & Lock"
+                ? (modelData.encrypted ? "Click to Unmount & Lock" : "Click to Unmount")
                 : (modelData.encrypted ? "Encrypted • Please Unlock" : "Click to Mount")
                 color: (modelData.encrypted && !modelData.mountpoint) ? "#fabd2f" : usbPopup.theme.accentPrimary
                 font.pixelSize: 10

@@ -5,172 +5,27 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell.Wayland
 import Quickshell.Widgets
-import Quickshell.Services.SystemTray
 import Quickshell.Services.Pipewire
-import Quickshell.Bluetooth
 
 Scope {
   id: root
 
   // --- PROPERTIES ---
   property var theme
-  property var niriWorkspaces: []
-  property var niriWindows: []
-  property string currentTemp: "--"
+  property var niriWorkspaces: niriEngine.niriWorkspaces
+  property var niriWindows: niriEngine.niriWindows
+
+  // System engine bindings
+  property string currentTemp: SystemInfo.cpuTemp
+  property bool numLockActive: systemEngine.numLockActive
+  property bool capsLockActive: systemEngine.capsLockActive
+  property string batteryLevel: systemEngine.batteryLevel
+  property string chargingStatus: systemEngine.chargingStatus
+  property bool isSleepInhibited: systemEngine.isSleepInhibited
+
   property string sysDetails: "Loading stats..."
   property string agendaDetails: "No upcoming events."
-  property bool numLockActive: false
-  property bool capsLockActive: false
-  property string batteryLevel: "..."
-  property int batteryTick: 0
   property date currentDate: new Date()
-  property string chargingStatus: "discharging"
-  property bool isSleepInhibited: false
-
-
-  // --- TIMERS & PROCESSES ---
-
-  // Midnight Watcher: Ensures the currentDate property updates when the day rolls over
-  Timer {
-    interval: 60000
-    running: true
-    repeat: true
-    onTriggered: {
-      let now = new Date();
-      if (now.getDate() !== currentDate.getDate()) {
-        currentDate = now;
-      }
-    }
-  }
-
-  // Consolidated Timer: High priority for LEDs, Low priority (30s) for Battery
-  Timer {
-    interval: 500
-    running: true
-    repeat: true
-    onTriggered: {
-      numLockCheck.running = false; numLockCheck.running = true;
-      capsLockCheck.running = false; capsLockCheck.running = true;
-
-      root.batteryTick++;
-      if (root.batteryTick >= 30) {
-        battProc.running = false;
-        battProc.running = true;
-        root.batteryTick = 0;
-        battStatusProc.running = true;
-      }
-    }
-    Component.onCompleted: {
-      battProc.running = true; // Run immediately on startup
-    }
-  }
-  Timer {
-    id: pollTimer
-    interval: 5000
-    onTriggered: idleProc.running = true
-  }
-  Timer {
-    interval: 1000; running: true; repeat: true
-    onTriggered: if (!niriProc.running) niriProc.running = true
-  }
-  Process {
-    id: numLockCheck
-    command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::numlock/brightness && echo '1' || echo '0'"]
-    running: false
-    stdout: StdioCollector {
-      onStreamFinished: { root.numLockActive = (text.trim() === "1"); }
-    }
-  }
-
-  Process {
-    id: capsLockCheck
-    command: ["sh", "-c", "grep -q '1' /sys/class/leds/*::capslock/brightness && echo '1' || echo '0'"]
-    running: false
-    stdout: StdioCollector {
-      onStreamFinished: { root.capsLockActive = (text.trim() === "1"); }
-    }
-  }
-
-  Process {
-    id: battProc
-    command: ["sh", "-c", "upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep 'percentage' | sed -e 's/percentage://' | sed -e 's/ //g'"]
-    running: false
-    stdout: StdioCollector {
-      onStreamFinished: {
-        root.batteryLevel = text.trim();
-      }
-    }
-  }
-  Process {
-    id: battStatusProc
-    command: ["/bin/sh", "-c", "upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep 'state' | sed -e 's/state://' | sed -e 's/ //g'"]
-    running: false
-    stdout: StdioCollector {
-      onStreamFinished: {
-        root.chargingStatus = text.trim();
-      }
-    }
-  }
-  property var pinnedApps: [
-    { id: "librewolf", icon: "librewolf", exec: "librewolf.sh" },
-    { id: "org.kde.dolphin", icon: "system-file-manager", exec: "dolphin" },
-    { id: "org.kde.kate", icon: "kate", exec: "kate" }
-
-  ]
-
-  function resolveIcon(appId) {
-    if (!appId) return "application-x-executable";
-    let id = appId.toLowerCase();
-    const iconMap = {
-      "kitty": "utilities-terminal",
-      "librewolf": "browser",
-      "org.kde.kate": "kate",
-      "nautilus": "system-file-manager",
-      "aerc": "email",
-      "khal": "calendar",
-      "endcord": "discord",
-      "watch-videos": "video-x-generic"
-    };
-    if (iconMap[id]) return iconMap[id];
-    if (id.includes(".")) {
-      let parts = id.split(".");
-      return parts[parts.length - 1];
-    }
-    return id;
-  }
-
-  Process {
-    id: niriProc
-    command: ["sh", "-c", "niri msg -j workspaces && echo '---SEP---' && niri msg -j windows"]
-    running: true
-    stdout: StdioCollector {
-      onStreamFinished: {
-        try {
-          let parts = text.split('---SEP---');
-          if (parts.length >= 2) {
-            let ws = JSON.parse(parts[0].trim());
-            ws.sort((a, b) => a.id - b.id);
-            root.niriWorkspaces = ws;
-            let wins = JSON.parse(parts[1].trim());
-            root.niriWindows = wins.filter(win => win.title !== "dropdown").sort((a, b) => a.pid - b.pid);
-          }
-        } catch(e) {}
-      }
-    }
-  }
-
-  Process {
-    id: tempProc
-    command: ["cat", "/sys/class/thermal/thermal_zone0/temp"]
-    running: true
-    stdout: StdioCollector {
-      onStreamFinished: {
-        let cleanText = text.trim().split('\n')[0];
-        let t = parseInt(cleanText);
-        if (!isNaN(t)) root.currentTemp = Math.round(t / 1000).toString() + "°C";
-      }
-    }
-  }
 
   Process {
     id: sysDetailProc
@@ -184,7 +39,7 @@ Scope {
           "Kernel: " + lines[1] + "\n" +
           "Uptime: " + lines[2] + "\n" +
           "RAM   : " + lines[3] + "\n" +
-          "Disk /: " + lines[4]  + "\n" +
+          "Disk /: " + lines[4]   + "\n" +
           "Home  : " + lines[5];
         }
       }
@@ -203,24 +58,6 @@ Scope {
     }
   }
 
-
-  Process {
-    id: idleProc
-    // If pgrep fails to find swayidle, it returns a non-zero exit code,
-    // which we catch with || echo to set our internal flag.
-    command: ["sh", "-c", "pgrep -x swayidle > /dev/null || echo 'INHIBITED'"]
-    running: true
-
-    stdout: StdioCollector {
-      onStreamFinished: {
-        root.isSleepInhibited = text.includes("INHIBITED");
-        // Poll every 5 seconds to keep the UI snappy without taxing the CPU
-        pollTimer.start();
-      }
-    }
-  }
-
-
   Variants {
     model: Quickshell.screens
 
@@ -229,244 +66,47 @@ Scope {
       required property var modelData
       screen: modelData
       anchors { top: true; bottom: true; right: true }
-      implicitWidth: 48
       color: root.theme.bgBase
 
+      // ========================================================
+      // GLOBAL SIZING CONFIGURATION
+      // ========================================================
+      implicitWidth: 52
+      property int itemWidth: 44
+      property int itemHeight: 44
+      property int iconSize: 44
+      // ========================================================
+
       // --- POPUPS ---
-      PopupWindow {
-        id: cpuPopup
-        anchor.window: mainBar
-        anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 710
-        implicitWidth: 280
-        implicitHeight: 180
-        visible: false
-        color: "transparent"
-        Connections {
-          target: cpuPopup
-          function onVisibleChanged() { if (cpuPopup.visible) { sysDetailProc.running = false; sysDetailProc.running = true; } }
-        }
-        Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
-          Item {
-            anchors.top: parent.top; anchors.right: parent.right; anchors.margins: 8
-            width: 20; height: 20
-            Text { text: "󰅖"; color: root.theme.textMuted; anchors.centerIn: parent; font.pixelSize: 18 }
-            MouseArea {
-              anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-              onClicked: cpuPopup.visible = false
-            }
-          }
-          Column {
-            anchors.fill: parent; anchors.margins: 12; spacing: 8
-            Text { text: "System Info"; color: root.theme.accentPrimary; font.bold: true; font.pixelSize: 14 }
-            Text { text: root.sysDetails; color: root.theme.textPrimary; font.pixelSize: 14; font.family: "Monospace" }
-          }
-        }
-      }
-
-      PopupWindow {
+      CalendarPopup {
         id: calendarPopup
-        anchor.window: mainBar
-        anchor.rect.x: -300
-        anchor.rect.y: mainBar.height - 525
-        implicitWidth: 280
-        implicitHeight: 520
-        visible: false
-        color: "transparent"
-
-        readonly property int firstDayOffset: {
-          let jsDay = new Date(root.currentDate.getFullYear(), root.currentDate.getMonth(), 1).getDay();
-          return jsDay === 0 ? 6 : jsDay - 1;
-        }
-        readonly property int daysInMonth: new Date(root.currentDate.getFullYear(), root.currentDate.getMonth() + 1, 0).getDate()
-
-        Connections {
-          target: calendarPopup
-          function onVisibleChanged() {
-            if (calendarPopup.visible) {
-              root.currentDate = new Date();
-              agendaProc.running = false;
-              agendaProc.running = true;
-            }
-          }
-        }
-
-        Rectangle {
-          anchors.fill: parent; color: root.theme.bgBase; border.width: 1; border.color: root.theme.bgSurface; radius: 10
-          Item {
-            anchors.top: parent.top; anchors.right: parent.right; anchors.margins: 10
-            width: 24; height: 24; z: 10 // Ensure it sits above the grid
-            Text { text: "󰅖"; color: root.theme.textMuted; anchors.centerIn: parent; font.pixelSize: 20 }
-            MouseArea {
-              anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-              onClicked: calendarPopup.visible = false
-            }
-          }
-          Column {
-            anchors.fill: parent; anchors.margins: 15; spacing: 15
-
-            Text {
-              text: Qt.formatDateTime(root.currentDate, "MMMM yyyy").toUpperCase();
-              color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            Item {
-              width: parent.width
-              height: 240
-              anchors.horizontalCenter: parent.horizontalCenter
-
-              GridLayout {
-                id: calendarGrid
-                anchors.fill: parent
-                columns: 7
-                rowSpacing: 10
-                columnSpacing: 8
-
-                Repeater {
-                  model: ["M", "T", "W", "T", "F", "S", "S"]
-                  Text { text: modelData; color: root.theme.accentPrimary; font.pixelSize: 14; Layout.alignment: Qt.AlignHCenter }
-                }
-
-                Repeater {
-                  model: calendarPopup.firstDayOffset
-                  Item { implicitWidth: 30; implicitHeight: 30 }
-                }
-
-                Repeater {
-                  model: calendarPopup.daysInMonth
-                  delegate: Rectangle {
-                    implicitWidth: 30; implicitHeight: 30
-                    radius: 4
-                    readonly property int dayNum: index + 1
-                    readonly property bool isToday: dayNum === root.currentDate.getDate() &&
-                    new Date().getMonth() === root.currentDate.getMonth() &&
-                    new Date().getFullYear() === root.currentDate.getFullYear()
-                    color: isToday ? root.theme.accentPrimary : "transparent"
-                    Text {
-                      anchors.centerIn: parent
-                      text: dayNum
-                      color: isToday ? root.theme.bgBase : root.theme.textPrimary
-                      font.bold: isToday
-                    }
-                  }
-                }
-
-                Repeater {
-                  model: 42 - (calendarPopup.firstDayOffset + calendarPopup.daysInMonth)
-                  Item { implicitWidth: 30; implicitHeight: 30 }
-                }
-              }
-            }
-
-            Rectangle { width: parent.width; height: 1; color: root.theme.bgSurface }
-
-            Item {
-              width: parent.width
-              height: 24
-
-              Text {
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                text: "Upcoming events"
-                color: root.theme.accentPrimary
-                font.pixelSize: 16
-              }
-
-              Text {
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                text: "󰃭"
-                color: root.theme.accentPrimary
-                font.pixelSize: 22
-
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: {
-                    let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                          p.command = ["sh", "-c", "kitty --config $HOME/.config/kitty/calendar.conf --class calendar -e ikhal"];
-                          p.running = true;
-                    calendarPopup.visible = false;
-                  }
-                }
-              }
-            }
-
-            ScrollView {
-              width: parent.width; height: 140; clip: true
-              Text {
-                width: parent.width
-                text: root.agendaDetails
-                color: root.theme.textPrimary
-                font.pixelSize: 13
-                font.family: "Monospace"
-                wrapMode: Text.Wrap
-              }
-            }
-          }
-        }
+        mainBarTarget: mainBar
+        theme: root.theme
+        currentDate: root.currentDate
+        agendaDetails: root.agendaDetails
       }
 
-      PanelWindow {
+      CpuPopup {
+        id: cpuPopup
+        mainBarTarget: mainBar
+        theme: root.theme
+        sysDetails: root.sysDetails
+        sysDetailProcTarget: sysDetailProc
+      }
+
+      // --- POWER OVERLAY ---
+      PowerPopup {
         id: powerPopup
-        visible: false
-        focusable: true
-        color: "transparent"
-        WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-        anchors { top: true; bottom: true; left: true; right: true }
-
-        MouseArea {
-          anchors.fill: parent
-          onClicked: powerPopup.visible = false
-          onVisibleChanged: { if (visible) powerBox.forceActiveFocus(); }
-          Rectangle { anchors.fill: parent; color: root.theme.bgOverlay }
-        }
-
-        Rectangle {
-          id: powerBox
-          focus: true
-          anchors.centerIn: parent
-          width: 420; height: 120; radius: 12
-          color: root.theme.bgBase; border.width: 2; border.color: root.theme.bgSurface
-          Row {
-            anchors.centerIn: parent; spacing: 25
-            Repeater {
-              model: [
-                { t: "Logout", i: "󰍃", c: "#00aaff", cmd: ["niri", "msg", "action", "quit","--skip-confirmation"] },
-                { t: "Reboot", i: "󰑓", c: "#00aa7f", cmd: ["systemctl", "reboot"] },
-                { t: "Shut Down", i: "⏻", c: "#fb4934", cmd: ["systemctl", "poweroff"] }
-              ]
-              Rectangle {
-                width: 110; height: 90; radius: 10
-                color: pwrMouse.containsMouse ? root.theme.bgSurface : "transparent"
-                Column {
-                  anchors.centerIn: parent; spacing: 8
-                  Text { text: modelData.i; color: modelData.c; font.pixelSize: 32; anchors.horizontalCenter: parent.horizontalCenter }
-                  Text { text: modelData.t; color: root.theme.textPrimary; font.bold: true; anchors.horizontalCenter: parent.horizontalCenter }
-                }
-                MouseArea {
-                  id: pwrMouse
-                  anchors.fill: parent; hoverEnabled: true
-                  onClicked: {
-                    powerPopup.visible = false
-                    let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                    p.command = modelData.cmd;
-                    p.running = true;
-                  }
-                }
-              }
-            }
-          }
-          Keys.onEscapePressed: powerPopup.visible = false
-        }
+        mainBarTarget: mainBar
+        theme: root.theme
       }
 
       // --- MAIN BAR CONTENT ---
       Item {
         anchors.fill: parent
         anchors.margins: 6
+
+        // --- TOP ALIGNED CONTENT BLOCK ---
         Column {
           anchors.top: parent.top
           anchors.horizontalCenter: parent.horizontalCenter
@@ -507,82 +147,36 @@ Scope {
             color: root.theme.bgSurface
 
             Text {
-              text: "󰅶" // Just the solid coffee cup
+              text: "󰅶"
               anchors.centerIn: parent
-
-              // Switch between bright accent and muted text
               color: root.isSleepInhibited ? root.theme.accentPrimary : root.theme.textMuted
-
               font.pixelSize: 24
             }
 
             MouseArea {
               anchors.fill: parent
               onClicked: {
-                // Create a one-shot process to run your script
                 let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-
-                // Execute the specific caffeine script in your home bin
                 p.command = ["mi-caffeine"];
                 p.running = true;
-
-                // Immediately tell the idle observer to check the process status
-                // so the cup color updates instantly
-                idleProc.running = true;
+                systemEngine.triggerIdleCheck();
               }
             }
           }
         }
 
-        Column {
-          y: 350; width: parent.width; spacing: 8
-          Repeater {
-            model: root.pinnedApps
-            Rectangle {
-              width: 42; height: 42; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
-              property var runningWin: root.niriWindows.find(w => w.app_id === modelData.id)
-              color: runningWin?.is_focused ? root.theme.bgSurface : "transparent"
-              border.width: runningWin?.is_focused ? 1 : 0; border.color: root.theme.accentPrimary
-              opacity: runningWin ? 1.0 : 0.4
-              IconImage { anchors.fill: parent; anchors.margins: 4; source: "image://icon/" + modelData.icon }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  if (runningWin)
-                    p.command = ["niri", "msg", "action", "focus-window", "--id", runningWin.id.toString()];
-                  else
-                    p.command = [modelData.exec];
-                  p.running = true;
-                }
-              }
-            }
-          }
-          Repeater {
-            model: {
-              // Create a copy, then sort explicitly
-              let sorted = root.niriWindows.slice();
-              sorted.sort((a, b) => Number(a.id) - Number(b.id));
-              return sorted;
-            }
-            delegate: Rectangle {
-              visible: !root.pinnedApps.some(p => p.id === modelData.app_id)
-              height: visible ? 34 : 0; width: 34; radius: 8; anchors.horizontalCenter: parent.horizontalCenter
-              color: modelData.is_focused ? root.theme.bgSurface : "transparent"
-              border.width: modelData.is_focused ? 1 : 0; border.color: root.theme.accentPrimary
-              IconImage { anchors.fill: parent; anchors.margins: 2; source: "image://icon/" + root.resolveIcon(modelData.app_id) }
-              MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                  let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = ["niri", "msg", "action", "focus-window", "--id", modelData.id.toString()];
-                  p.running = true;
-                }
-              }
-            }
-          }
+        // --- APPLICATION DOCK SECTION ---
+        AppDock {
+          y: 320
+          width: parent.width
+          theme: root.theme
+          niriWindows: root.niriWindows
+          itemWidth: mainBar.itemWidth
+          itemHeight: mainBar.itemHeight
+          iconSize: mainBar.iconSize
         }
 
+        // --- BOTTOM ALIGNED CONTENT BLOCK ---
         Column {
           anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter; width: parent.width; spacing: 8
           MouseArea {
@@ -594,15 +188,26 @@ Scope {
             }
             Column {
               id: wsColumn; spacing: 6; anchors.horizontalCenter: parent.horizontalCenter
+
               Repeater {
-                model: root.niriWorkspaces
-                Rectangle { width: 10; height: modelData.is_focused ? 22 : 10; radius: 5; color: modelData.is_focused ? root.theme.accentPrimary : root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter }
+                id: wsRepeater
+                model: root.niriWorkspaces // FIX: Changed from niriEngine.niriWorkspaces
+
+                Rectangle {
+                  width: 10
+                  height: modelData.is_focused ? 22 : 10
+                  radius: 5
+                  color: modelData.is_focused ? root.theme.accentPrimary : root.theme.textPrimary
+                  anchors.horizontalCenter: parent.horizontalCenter
+                }
               }
             }
           }
 
+          // --- CPU Block ---
           Rectangle {
             width: 40; height: 45; radius: 8; color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
             Column {
               anchors.centerIn: parent; spacing: 1
               Text { text: "CPU"; color: root.theme.accentPrimary; font.pixelSize: 13; anchors.horizontalCenter: parent.horizontalCenter }
@@ -612,7 +217,7 @@ Scope {
             MouseArea { anchors.fill: parent; onClicked: cpuPopup.visible = !cpuPopup.visible }
           }
 
-          // --- BATTERY DISPLAY ---
+          // --- Battery Block ---
           Rectangle {
             visible: {
               if (!root.batteryLevel || root.batteryLevel === "" || root.batteryLevel === "0%")
@@ -620,22 +225,17 @@ Scope {
 
               let level = parseInt(root.batteryLevel.replace("%", ""));
               return level > 0 && level < 100;
-            }            width: 40; height: 26; radius: 8; color: root.theme.bgSurface
+            }
+            width: 40; height: 26; radius: 8; color: root.theme.bgSurface
             anchors.horizontalCenter: parent.horizontalCenter
             Row {
               anchors.centerIn: parent; spacing: 2
               Text {
                 font.family: "JetBrainsMono Nerd Font"
-                // If 'charging', show bolt. If anything else (discharging/full), show battery.
-                text: (root.chargingStatus === "charging")
-                ? "󱐋 " + root.batteryLevel  // Bolt icon
-                : "  " + root.batteryLevel  // Battery icon
-                // Logic for the dynamic theme colors
-                color: (root.chargingStatus === "charging")
-                ? root.theme.accentPrimary
-                : root.theme.textPrimary ; font.pixelSize: 13
+                text: (root.chargingStatus === "charging") ? "󱐋 " + root.batteryLevel : "  " + root.batteryLevel
+                color: (root.chargingStatus === "charging") ? root.theme.accentPrimary : root.theme.textPrimary
+                font.pixelSize: 13
               }
-
             }
           }
 
@@ -664,7 +264,7 @@ Scope {
                 anchors.fill: parent
                 onWheel: (wheel) => {
                   let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                  p.command = wheel.angleDelta.y > 0 ? ["brightnessctl", "set", "5%+"] : ["brightnessctl", "set", "5%-"];
+                  p.command = wheel.angleDelta.y < 0 ? ["brightnessctl", "set", "5%-"] : ["brightnessctl", "set", "5%+"];
                   p.running = true;
                 }
               }
@@ -682,12 +282,13 @@ Scope {
               }
             }
           }
-          // --- USB Button (Control Center Style) ---
+
+          // --- USB Monitor Button ---
           Rectangle {
-            // Only show the button if a drive is actually plugged in
             visible: usbMonitor.driveList.length > 0
             width: 36; height: 20; radius: 16
             color: root.theme.bgSurface
+            anchors.horizontalCenter: parent.horizontalCenter
 
             Text {
               text: "󱊞"
@@ -700,40 +301,34 @@ Scope {
               anchors.fill: parent
               onClicked: {
                 let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                // We call "usbpopupcomp" (the ID from shell.qml)
                 p.command = ["quickshell", "-c", "mi-shell", "ipc", "call", "usbpopupcomp", "toggle"];
                 p.running = true;
               }
             }
           }
-          Column {
-            spacing: 4; anchors.horizontalCenter: parent.horizontalCenter
-            Repeater {
-              model: SystemTray.items
-              IconImage {
-                source: modelData.icon !== "" ? modelData.icon : "network-wireless"
-                implicitSize: 20
-                MouseArea {
-                  anchors.fill: parent; acceptedButtons: Qt.LeftButton | Qt.RightButton
-                  onClicked: (mouse) => {
-                    if (modelData.id.toLowerCase().includes("network") || modelData.id.toLowerCase().includes("nm-applet")) {
-                      let p = Qt.createQmlObject('import Quickshell.Io; Process {}', root);
-                      p.command = ["kitty", "--class", "nmtui-terminal", "-e", "nmtui"];
-                      p.running = true;
-                    } else {
-                      if (mouse.button === Qt.RightButton) modelData.secondaryActivate();
-                      else modelData.activate();
-                    }
-                  }
-                }
-              }
-            }
+
+          // --- SYSTEM TRAY SECTION ---
+          SysTray {
+            theme: root.theme
           }
 
           Rectangle {
             width: 46; height: 24; radius: 8; color: root.theme.bgSurface; anchors.horizontalCenter: parent.horizontalCenter
             Text { anchors.centerIn: parent; text: Time.timeString.substring(0, 5); color: root.theme.textPrimary; font.pixelSize: 14; font.bold: true }
-            MouseArea { anchors.fill: parent; onClicked: calendarPopup.visible = !calendarPopup.visible }
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: {
+                // 1. Refresh the date object so the calendar displays the actual current day
+                root.currentDate = new Date();
+
+                // 2. Trigger the khal process to populate the agenda stream
+                agendaProc.running = true;
+
+                // 3. Toggle the popup window surface visibility
+                calendarPopup.visible = !calendarPopup.visible;
+              }
+            }
           }
         }
       }

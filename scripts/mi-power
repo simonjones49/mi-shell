@@ -56,7 +56,7 @@ while true; do
             swayidle -w \
                 timeout 300 'niri msg action power-off-monitors' \
                 timeout 360 'swaylock -f -c 000000' \
-                timeout 900 'systemctl suspend' \
+                timeout 1800 'systemctl suspend' \
                 resume 'niri msg action power-on-monitors' \
                 before-sleep 'swaylock -f -c 000000; keepassxc --lock' &
 

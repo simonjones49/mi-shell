@@ -8,19 +8,34 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "bar"
-import "launcher"      // Renamed
+import "launcher"
 import "notifications"
-import "themeSwitcher" // Renamed
+import "themeSwitcher"
+import "wifiSwitcher"
+import "vpnSwitcher"
 import "wallpaper"
 import "osd"
 import "controlCentre"
 import "mediaControl"
 import "usb"
-
+import "timer"
+import "niriEngine"
+import "system"
 Scope {
 
   ThemeSwitcher { id: ts }
-  Bar { theme: ts.theme }
+
+  WifiSwitcher {
+    id: wifi
+    theme: ts.theme
+  }
+  VpnSwitcher {
+    id: vpn
+    theme: ts.theme
+  }
+  Bar {
+    theme: ts.theme
+  }
   AppLauncher { theme: ts.theme }
   NotificationPopup { theme: ts.theme }
   WallpaperManager { theme: ts.theme }
@@ -32,4 +47,7 @@ Scope {
     MediaControl { theme: ts.theme }
     UsbLogic { id: usbMonitor }
     UsbPopup { id: usbPopupComp; theme: ts.theme }
+    MasterTimer { id: masterTimer }
+    NiriEngine { id: niriEngine }
+    SystemEngine { id: systemEngine }
 }

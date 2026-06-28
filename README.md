@@ -31,9 +31,22 @@ The Control panel has easy access to networks, vpns, bluetooth, wallpaper, theme
 
 ![Control Centre](assets/controlcentre.png)
 
+The wallpaper manager can change, preview and set the desktop wallpaper.
+
+![Wallpaper Manager](assets/wallpapermanager.png)
+
+There are lots of themes, instantly updated for a live preview, this will theme the desktop, kitty and qutebrowser.
+
+![Theme manager](assets/thememanager.png)
+
 The launcher has a text filter and you can use the mouse.
 
 ![The application launcher](assets/launcher.png)
+
+The Session menu allow you to close the session cleanly. 
+
+![Session menu](assets/sessionmenu.png)
+
 
 The notifications are also theme aware.
 
@@ -47,15 +60,24 @@ Now has USB drive management. You can mount, unmount and power off from the butt
 
 ![USB Popup](assets/usb.png)
 
+Wifi Network manager
+
+![Wifi Manager](assets/wifimanager.png)
+
+VPN manager
+
+![VPN Manager](assets/vpnmanager.png)
+
+
 ## What currently works
 
 | Module | What it does |
 |--------|-------------|
-| **Bar** | clock, workspaces, pinned apps and running apps, volume, brightness, network, system tray, |
+| **Bar** | clock, workspaces, pinned apps and running apps, volume, brightness, network, system tray |
 | **App Launcher** | rofi style application launcher |
 | **Notifications** | mako-style notification daemon with popups |
 | **OSD** | on-screen display for volume and brightness changes, auto-hides |
-| **Theme Switcher** | 206 themes across 6 families, persists across restarts |
+| **Theme Switcher** | 206 themes across 6 families, persists across restarts. Now themes the desktop, kitty and qutebrowser with hot reload for instant changes |
 | **Wallpaper Manager** | grid picker for wallpapers, preview, swaybg |
 | **Key Lock** | Number and caps lock on the bar |
 | **Power Menu** | Shut down, reboot and logout from the bar |
@@ -82,23 +104,25 @@ These will be installed automatically if you use the `PKGBUILD`:
 * networkmanager
 * kitty
 * udisks2
-*   ttf-jetbrains-mono-nerd
-*   network-manager-applet
+* ttf-jetbrains-mono-nerd
+* network-manager-applet
+* blueman
+* dolphin
+* kate
+* pavucontrol
+* qutebrowser
+* playerctl
+* mpv
+* mpv-mpris
+* python-keyring
+* xwayland-satellite
 
 ### Optional
 
-* bluetui: for the Bluetooth manager UI
-* nmtui: for the Network manager UI
-* pulsemixer: a TUI sound manager UI
 * aerc: a TUI email client
-* librewolf: for the browser shortcuts
-* playerctl: recommended for better MPRIS control
 * vdirsyncer: Only needed if you want to sync your local khal calendar with Google/CalDAV
-* dolphin: Recommended file manager
-* kate: Recommended text editor
-* mpv: Recommended media player
-* nerd-fonts-git: fonts used in notifications
-* Musikcube: Flawless music player with album art MPRIS connection
+* musikcube: Flawless music player with album art MPRIS connection
+* keepassxc: A system keyring manager
 
 ## Installation
 
